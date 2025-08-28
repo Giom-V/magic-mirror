@@ -41,7 +41,9 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
 
   const [model, setModel] = useState<string>(appConfig.liveModel);
   const [config, setConfig] = useState<LiveConnectConfig>({
-    systemInstruction: appConfig.systemInstruction,
+    systemInstruction: {
+      parts: [{ text: appConfig.systemInstruction }],
+    },
     speechConfig: {
       languageCode: "fr-FR",
       voiceConfig: {
