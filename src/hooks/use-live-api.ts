@@ -52,28 +52,6 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
         },
       },
     },
-    tools: [
-      {
-        functionDeclarations: [
-          {
-            name: "edit_camera_image",
-            description: appConfig.editCameraImageDescription,
-            parameters: {
-              type: Type.OBJECT,
-              properties: {},
-            },
-          },
-          {
-            name: appConfig.clearImageName,
-            description: appConfig.clearImageDescription,
-            parameters: {
-              type: Type.OBJECT,
-              properties: {},
-            },
-          },
-        ],
-      },
-    ],
   });
   const [connected, setConnected] = useState(false);
   const [volume, setVolume] = useState(0);
