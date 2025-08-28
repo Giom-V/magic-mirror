@@ -90,7 +90,7 @@ export default function SidePanel({
 
       const response = await ai.models.generateContent({
         model: config.imageEditModel,
-        contents: [imagePart, config.editCameraImagePrompt],
+        contents: [imagePart, config.tools.editCameraImage.prompt],
       });
 
       if (
