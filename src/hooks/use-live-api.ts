@@ -20,7 +20,7 @@ import { LiveClientOptions } from "../types";
 import { AudioStreamer } from "../lib/audio-streamer";
 import { audioContext } from "../lib/utils";
 import VolMeterWorket from "../lib/worklets/vol-meter";
-import { LiveConnectConfig } from "@google/genai";
+import { LiveConnectConfig, FunctionDeclaration, Type } from "@google/genai";
 
 export type UseLiveAPIResults = {
   client: GenAILiveClient;
@@ -39,7 +39,25 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
   const audioStreamerRef = useRef<AudioStreamer | null>(null);
 
   const [model, setModel] = useState<string>("models/gemini-2.0-flash-exp");
-  const [config, setConfig] = useState<LiveConnectConfig>({});
+  const [config, setConfig] = useState<LiveConnectConfig>({
+    systemInstruction:
+      "You are a magic mirror. Be creative and playful in your responses.",
+    tools: [
+      {
+        functionDeclarations: [
+          {
+            name: "edit_camera_image",
+            description:
+              "Takes a picture using the webcam, and then uses a model to generate a picture of the person dressed as a princess.",
+            parameters: {
+              type: Type.OBJECT,
+              properties: {},
+            },
+          },
+        ],
+      },
+    ],
+  });
   const [connected, setConnected] = useState(false);
   const [volume, setVolume] = useState(0);
 
