@@ -64,6 +64,7 @@ export default function SidePanel({
   }
 
   const editCameraImage = useCallback(async () => {
+    console.log("Using tool: edit_camera_image");
     const stream = await webcam.start();
     const video = document.createElement("video");
     video.srcObject = stream;
@@ -136,6 +137,7 @@ export default function SidePanel({
         editCameraImage();
       }
       if (event.key === "c") {
+        console.log("Using tool: clear_image_display");
         setEditedImage(null);
       }
     };
