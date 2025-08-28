@@ -37,15 +37,17 @@ function AltairComponent() {
       }
       // send data for the response of your tool call
       // in this case Im just saying it was successful
-      if (toolCall.functionCalls.length) {
+      if (fc) {
         setTimeout(
           () =>
             client.sendToolResponse({
-              functionResponses: toolCall.functionCalls?.map((fc) => ({
-                response: { output: { success: true } },
-                id: fc.id,
-                name: fc.name,
-              })),
+              functionResponses: [
+                {
+                  response: { output: { success: true } },
+                  id: fc.id,
+                  name: fc.name,
+                },
+              ],
             }),
           200
         );
