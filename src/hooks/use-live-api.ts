@@ -21,7 +21,13 @@ import { LiveClientOptions } from "../types";
 import { AudioStreamer } from "../lib/audio-streamer";
 import { audioContext } from "../lib/utils";
 import VolMeterWorket from "../lib/worklets/vol-meter";
-import { LiveConnectConfig, FunctionDeclaration, Type } from "@google/genai";
+import {
+  LiveConnectConfig,
+  FunctionDeclaration,
+  Type,
+  Modality,
+  MediaResolution,
+} from "@google/genai";
 
 export type UseLiveAPIResults = {
   client: GenAILiveClient;
@@ -41,6 +47,12 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
 
   const [model, setModel] = useState<string>(appConfig.liveModel);
   const [config, setConfig] = useState<LiveConnectConfig>({
+    responseModalities: [Modality.AUDIO],
+    mediaResolution: MediaResolution.MEDIA_RESOLUTION_MEDIUM,
+    contextWindowCompression: {
+      triggerTokens: "25600",
+      slidingWindow: { targetTokens: "12800" },
+    },
     systemInstruction: {
       parts: [{ text: appConfig.systemInstruction }],
     },
