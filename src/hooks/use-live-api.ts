@@ -15,12 +15,13 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import appConfig from "../config.json";
 import { GenAILiveClient } from "../lib/genai-live-client";
 import { LiveClientOptions } from "../types";
 import { AudioStreamer } from "../lib/audio-streamer";
 import { audioContext } from "../lib/utils";
 import VolMeterWorket from "../lib/worklets/vol-meter";
-import { LiveConnectConfig } from "@google/genai";
+import { LiveConnectConfig, FunctionDeclaration, Type } from "@google/genai";
 
 export type UseLiveAPIResults = {
   client: GenAILiveClient;
@@ -38,8 +39,40 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
   const client = useMemo(() => new GenAILiveClient(options), [options]);
   const audioStreamerRef = useRef<AudioStreamer | null>(null);
 
-  const [model, setModel] = useState<string>("models/gemini-2.0-flash-exp");
-  const [config, setConfig] = useState<LiveConnectConfig>({});
+  const [model, setModel] = useState<string>(appConfig.liveModel);
+  const [config, setConfig] = useState<LiveConnectConfig>({
+    systemInstruction: appConfig.systemInstruction,
+    speechConfig: {
+      languageCode: "fr-FR",
+      voiceConfig: {
+        prebuiltVoiceConfig: {
+          voiceName: "Aoede",
+        },
+      },
+    },
+    tools: [
+      {
+        functionDeclarations: [
+          {
+            name: "edit_camera_image",
+            description: appConfig.editCameraImageDescription,
+            parameters: {
+              type: Type.OBJECT,
+              properties: {},
+            },
+          },
+          {
+            name: appConfig.clearImageName,
+            description: appConfig.clearImageDescription,
+            parameters: {
+              type: Type.OBJECT,
+              properties: {},
+            },
+          },
+        ],
+      },
+    ],
+  });
   const [connected, setConnected] = useState(false);
   const [volume, setVolume] = useState(0);
 

@@ -38,15 +38,22 @@ function App() {
   const videoRef = useRef<HTMLVideoElement>(null);
   // either the screen capture, the video or null, if null we hide it
   const [videoStream, setVideoStream] = useState<MediaStream | null>(null);
+  const [editedImage, setEditedImage] = useState<string | null>(null);
 
   return (
     <div className="App">
       <LiveAPIProvider options={apiOptions}>
         <div className="streaming-console">
-          <SidePanel />
+          <SidePanel
+            editedImage={editedImage}
+            setEditedImage={setEditedImage}
+          />
           <main>
             <div className="main-app-area">
               {/* APP goes here */}
+              {editedImage && (
+                <img src={editedImage} alt="edited" className="edited-image" />
+              )}
               <Altair />
               <video
                 className={cn("stream", {

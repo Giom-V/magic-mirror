@@ -4,6 +4,7 @@
   "dependencies": {
     "@google/genai": "^0.14.0",
     "classnames": "^2.5.1",
+    "core-js": "^3.45.1",
     "dotenv-flow": "^4.1.0",
     "eventemitter3": "^5.0.1",
     "lodash": "^4.17.21",

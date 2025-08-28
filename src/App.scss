@@ -149,10 +149,24 @@ body {
   }
 
   .main-app-area {
-    display: flex;
+    display: grid;
     flex: 1;
     align-items: center;
     justify-content: center;
+
+    > * {
+      grid-column: 1;
+      grid-row: 1;
+    }
+
+    .edited-image {
+      width: 80%;
+      height: 80%;
+      object-fit: contain;
+      z-index: 10;
+      justify-self: center;
+      align-self: center;
+    }
   }
 
   .function-call {

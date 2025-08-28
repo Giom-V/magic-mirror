@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 
-import React from 'react';
-import { render, screen } from '@testing-library/react';
-import App from './App';
+import React from "react";
+import { render, screen } from "@testing-library/react";
+import App from "./App";
 
-test('renders learn react link', () => {
+jest.mock("vega-embed", () => () => {});
+
+test("renders the console", () => {
   render(<App />);
-  const linkElement = screen.getByText(/learn react/i);
+  const linkElement = screen.getByText(/Console/i);
   expect(linkElement).toBeInTheDocument();
 });
