@@ -18,4 +18,7 @@
 // allows you to do things like:
 // expect(element).toHaveTextContent(/react/i)
 // learn more: https://github.com/testing-library/jest-dom
-import '@testing-library/jest-dom';
+import "core-js/features/structured-clone";
+import "@testing-library/jest-dom";
+
+process.env.REACT_APP_GEMINI_API_KEY = "test-key";

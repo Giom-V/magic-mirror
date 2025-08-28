@@ -20,7 +20,7 @@ import cn from "classnames";
 import { memo, ReactNode } from "react";
 import { useLoggerStore } from "../../lib/store-logger";
 import SyntaxHighlighter from "react-syntax-highlighter";
-import { vs2015 as dark } from "react-syntax-highlighter/dist/esm/styles/hljs";
+import { vs2015 as dark } from "react-syntax-highlighter/dist/cjs/styles/hljs";
 import {
   ClientContentLog as ClientContentLogType,
   StreamingLog,
