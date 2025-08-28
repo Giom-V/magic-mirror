@@ -15,8 +15,9 @@
  */
 
 import "./react-select.scss";
+import config from "../../config.json";
 import cn from "classnames";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { RiSidebarFoldLine, RiSidebarUnfoldLine } from "react-icons/ri";
 import Select from "react-select";
 import { useLiveAPIContext } from "../../contexts/LiveAPIContext";
@@ -62,7 +63,7 @@ export default function SidePanel({
     };
   }
 
-  const editCameraImage = async () => {
+  const editCameraImage = useCallback(async () => {
     const stream = await webcam.start();
     const video = document.createElement("video");
     video.srcObject = stream;
@@ -87,11 +88,8 @@ export default function SidePanel({
       const imagePart = fileToGenerativePart(base64Data, "image/jpeg");
 
       const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash-image-preview",
-        contents: [
-          imagePart,
-          "a picture of the person dressed as a princess",
-        ],
+        model: config.imageEditModel,
+        contents: [imagePart, config.editCameraImagePrompt],
       });
 
       if (
@@ -110,7 +108,7 @@ export default function SidePanel({
       }
       webcam.stop();
     });
-  };
+  }, [webcam, setEditedImage]);
 
   //scroll the log to the bottom when new logs come in
   useEffect(() => {
@@ -131,6 +129,20 @@ export default function SidePanel({
       client.off("log", log);
     };
   }, [client, log]);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "i") {
+        editCameraImage();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [editCameraImage]);
 
   const handleSubmit = () => {
     client.send([{ text: textInput }]);

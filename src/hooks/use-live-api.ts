@@ -15,6 +15,7 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import appConfig from "../config.json";
 import { GenAILiveClient } from "../lib/genai-live-client";
 import { LiveClientOptions } from "../types";
 import { AudioStreamer } from "../lib/audio-streamer";
@@ -38,17 +39,15 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
   const client = useMemo(() => new GenAILiveClient(options), [options]);
   const audioStreamerRef = useRef<AudioStreamer | null>(null);
 
-  const [model, setModel] = useState<string>("models/gemini-2.0-flash-exp");
+  const [model, setModel] = useState<string>(appConfig.liveModel);
   const [config, setConfig] = useState<LiveConnectConfig>({
-    systemInstruction:
-      "You are a magic mirror. Be creative and playful in your responses.",
+    systemInstruction: appConfig.systemInstruction,
     tools: [
       {
         functionDeclarations: [
           {
             name: "edit_camera_image",
-            description:
-              "Takes a picture using the webcam, and then uses a model to generate a picture of the person dressed as a princess.",
+            description: appConfig.editCameraImageDescription,
             parameters: {
               type: Type.OBJECT,
               properties: {},

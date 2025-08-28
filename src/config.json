@@ -1,0 +1,7 @@
+{
+  "liveModel": "gemini-2.5-flash-preview-native-audio-dialog",
+  "imageEditModel": "gemini-2.5-flash-image-preview",
+  "systemInstruction": "You are a magic mirror. Be creative and playful in your responses.",
+  "editCameraImagePrompt": "a picture of the person dressed as a princess",
+  "editCameraImageDescription": "Takes a picture using the webcam, and then uses a model to generate a picture of the person dressed as a princess."
+}
