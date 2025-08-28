@@ -25,7 +25,7 @@ import { useLoggerStore } from "../../lib/store-logger";
 import Logger, { LoggerFilterType } from "../logger/Logger";
 import "./side-panel.scss";
 import { useWebcam } from "../../hooks/use-webcam";
-import { GoogleGenAI, Part } from "@google/genai";
+import { GoogleGenAI, Part, LiveServerToolCall } from "@google/genai";
 
 const filterOptions = [
   { value: "conversations", label: "Conversations" },
@@ -90,7 +90,7 @@ export default function SidePanel({
 
       const response = await ai.models.generateContent({
         model: config.imageEditModel,
-        contents: [imagePart, config.editCameraImagePrompt],
+        contents: [imagePart, config.tools.editCameraImage.prompt],
       });
 
       if (
@@ -130,6 +130,33 @@ export default function SidePanel({
       client.off("log", log);
     };
   }, [client, log]);
+
+  useEffect(() => {
+    const onToolCall = (toolCall: LiveServerToolCall) => {
+      if (!toolCall.functionCalls) {
+        return;
+      }
+
+      const editCall = toolCall.functionCalls.find(
+        (fc) => fc.name === config.tools.editCameraImage.name
+      );
+      if (editCall) {
+        editCameraImage();
+      }
+
+      const clearCall = toolCall.functionCalls.find(
+        (fc) => fc.name === config.tools.clearImage.name
+      );
+      if (clearCall) {
+        setEditedImage(null);
+      }
+    };
+
+    client.on("toolcall", onToolCall);
+    return () => {
+      client.off("toolcall", onToolCall);
+    };
+  }, [client, editCameraImage, setEditedImage]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
