@@ -124,6 +124,7 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
     if (!config) {
       throw new Error("config has not been set");
     }
+    console.log("Connecting with config:", config);
     client.disconnect();
     await client.connect(model, config);
   }, [client, config, model]);
