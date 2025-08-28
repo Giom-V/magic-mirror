@@ -10,7 +10,7 @@
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
+ * See the License for the a-specific language governing permissions and
  * limitations under the License.
  */
 
@@ -27,7 +27,7 @@ import {
   Type,
   Modality,
   MediaResolution,
-} from "@google/genai";
+} from "@google/generative-ai";
 
 export type UseLiveAPIResults = {
   client: GenAILiveClient;
@@ -52,7 +52,14 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
       description: appConfig.tools.editCameraImage.description,
       parameters: {
         type: Type.OBJECT,
-        properties: {},
+        properties: {
+          character: {
+            type: Type.STRING,
+            description:
+              "The fairy tale or fantasy character to transform the person into. For example: 'ogre', 'elf', 'witch', 'king', etc.",
+          },
+        },
+        required: ["character"],
       },
     };
 
@@ -74,7 +81,7 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
           json_graph: {
             type: Type.STRING,
             description:
-              appConfig.tools.renderAltair.parameters.properties.json_graph
+              appConfig.tools.renderAltaf.parameters.properties.json_graph
                 .description,
           },
         },

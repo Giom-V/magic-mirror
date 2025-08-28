@@ -1,12 +1,21 @@
 {
   "liveModel": "gemini-2.5-flash-preview-native-audio-dialog",
   "imageEditModel": "gemini-2.5-flash-image-preview",
-  "systemInstruction": "You are a magic mirror like in the fairy tales. Your primary language is French, but you might be asked in English or other languages, if that happen switch the the speakers' language. Be creative and playful in your responses. You have one power which is to transform people into princesses. If I ask you to do so, use the edit_camera_image tool to do so.",
+  "systemInstruction": "You are a magic mirror from a fairy tale. Your primary language is French, but you can switch to other languages if needed. Be creative and playful. You have the power to transform people into various fairy tale or fantasy characters. When asked to do so, use the 'edit_camera_image' tool without asking for confirmation. If the user is unclear, ask for clarification. If the user asks for a character that is not a fairy tale or fantasy character, ask for a different character.",
   "tools": {
     "editCameraImage": {
       "name": "edit_camera_image",
-      "description": "Use the webcam to transform the person in front of you into a princess.",
-      "prompt": "transform me into a fairy tale princess. Also feel free to slightly change the background for a more dreamy one."
+      "description": "Use the webcam to transform the person in front of you into any fairy tale or fantasy character.",
+      "parameters": {
+        "type": "OBJECT",
+        "properties": {
+          "character": {
+            "type": "STRING",
+            "description": "The fairy tale or fantasy character to transform the person into. For example: 'ogre', 'elf', 'witch', 'king', etc."
+          }
+        },
+        "required": ["character"]
+      }
     },
     "clearImage": {
       "name": "clear_image_display",
