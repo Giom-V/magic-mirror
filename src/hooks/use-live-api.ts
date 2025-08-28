@@ -46,24 +46,67 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
   const audioStreamerRef = useRef<AudioStreamer | null>(null);
 
   const [model, setModel] = useState<string>(appConfig.liveModel);
-  const [config, setConfig] = useState<LiveConnectConfig>({
-    responseModalities: [Modality.AUDIO],
-    mediaResolution: MediaResolution.MEDIA_RESOLUTION_MEDIUM,
-    contextWindowCompression: {
-      triggerTokens: "25600",
-      slidingWindow: { targetTokens: "12800" },
-    },
-    systemInstruction: {
-      parts: [{ text: appConfig.systemInstruction }],
-    },
-    speechConfig: {
-      languageCode: "fr-FR",
-      voiceConfig: {
-        prebuiltVoiceConfig: {
-          voiceName: "Aoede",
+  const [config, setConfig] = useState<LiveConnectConfig>(() => {
+    const editCameraImage = {
+      name: appConfig.tools.editCameraImage.name,
+      description: appConfig.tools.editCameraImage.description,
+      parameters: {
+        type: Type.OBJECT,
+        properties: {},
+      },
+    };
+
+    const clearImage = {
+      name: appConfig.tools.clearImage.name,
+      description: appConfig.tools.clearImage.description,
+      parameters: {
+        type: Type.OBJECT,
+        properties: {},
+      },
+    };
+
+    const renderAltair = {
+      name: appConfig.tools.renderAltair.name,
+      description: appConfig.tools.renderAltair.description,
+      parameters: {
+        type: Type.OBJECT,
+        properties: {
+          json_graph: {
+            type: Type.STRING,
+            description:
+              appConfig.tools.renderAltair.parameters.properties.json_graph
+                .description,
+          },
+        },
+        required: appConfig.tools.renderAltair.parameters.required,
+      },
+    };
+
+    return {
+      responseModalities: [Modality.AUDIO],
+      mediaResolution: MediaResolution.MEDIA_RESOLUTION_MEDIUM,
+      contextWindowCompression: {
+        triggerTokens: "25600",
+        slidingWindow: { targetTokens: "12800" },
+      },
+      systemInstruction: {
+        parts: [{ text: appConfig.systemInstruction }],
+      },
+      speechConfig: {
+        languageCode: "fr-FR",
+        voiceConfig: {
+          prebuiltVoiceConfig: {
+            voiceName: "Aoede",
+          },
         },
       },
-    },
+      tools: [
+        { googleSearch: {} },
+        {
+          functionDeclarations: [editCameraImage, clearImage, renderAltair],
+        },
+      ],
+    };
   });
   const [connected, setConnected] = useState(false);
   const [volume, setVolume] = useState(0);
