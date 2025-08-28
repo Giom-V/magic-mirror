@@ -53,6 +53,14 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
               properties: {},
             },
           },
+          {
+            name: appConfig.clearImageName,
+            description: appConfig.clearImageDescription,
+            parameters: {
+              type: Type.OBJECT,
+              properties: {},
+            },
+          },
         ],
       },
     ],

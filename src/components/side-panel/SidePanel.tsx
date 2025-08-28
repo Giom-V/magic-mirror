@@ -135,6 +135,9 @@ export default function SidePanel({
       if (event.key === "i") {
         editCameraImage();
       }
+      if (event.key === "c") {
+        setEditedImage(null);
+      }
     };
 
     window.addEventListener("keydown", handleKeyDown);
@@ -202,11 +205,6 @@ export default function SidePanel({
         </div>
       </section>
       <div className="side-panel-container" ref={loggerRef}>
-        {editedImage && (
-          <div className="edited-image-container">
-            <img src={editedImage} alt="edited" />
-          </div>
-        )}
         <Logger
           filter={(selectedOption?.value as LoggerFilterType) || "none"}
         />

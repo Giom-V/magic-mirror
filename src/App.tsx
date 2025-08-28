@@ -51,6 +51,9 @@ function App() {
           <main>
             <div className="main-app-area">
               {/* APP goes here */}
+              {editedImage && (
+                <img src={editedImage} alt="edited" className="edited-image" />
+              )}
               <Altair />
               <video
                 className={cn("stream", {

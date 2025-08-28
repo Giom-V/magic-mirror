@@ -153,6 +153,15 @@ body {
     flex: 1;
     align-items: center;
     justify-content: center;
+    position: relative;
+
+    .edited-image {
+      max-width: 80%;
+      max-height: 80%;
+      object-fit: contain;
+      position: absolute;
+      z-index: 10;
+    }
   }
 
   .function-call {
