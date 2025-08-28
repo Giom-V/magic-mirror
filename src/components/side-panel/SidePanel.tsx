@@ -94,11 +94,18 @@ export default function SidePanel({
         ],
       });
 
-      for (const part of response.candidates[0].content.parts) {
-        if (part.inlineData) {
-          const base64ImageBytes: string = part.inlineData.data;
-          const imageUrl = `data:image/png;base64,${base64ImageBytes}`;
-          setEditedImage(imageUrl);
+      if (
+        response.candidates &&
+        response.candidates.length > 0 &&
+        response.candidates[0].content &&
+        response.candidates[0].content.parts
+      ) {
+        for (const part of response.candidates[0].content.parts) {
+          if (part.inlineData && part.inlineData.data) {
+            const base64ImageBytes: string = part.inlineData.data;
+            const imageUrl = `data:image/png;base64,${base64ImageBytes}`;
+            setEditedImage(imageUrl);
+          }
         }
       }
       webcam.stop();
