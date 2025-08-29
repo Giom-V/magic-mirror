@@ -154,7 +154,7 @@ function App() {
         if (!connected) {
           connect();
         }
-        setMuted((prevMuted) => !prevMuted);
+        setMuted(false);
       } else if (event.key === "i") {
         editCameraImage();
       } else if (event.key === "Delete") {
