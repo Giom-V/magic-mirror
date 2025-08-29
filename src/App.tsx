@@ -46,7 +46,7 @@ function App() {
   const [videoStream, setVideoStream] = useState<MediaStream | null>(null);
   const [editedImage, setEditedImage] = useState<string | null>(null);
   const [muted, setMuted] = useState(false);
-  const [sidePanelOpen, setSidePanelOpen] = useState(true);
+  const [sidePanelOpen, setSidePanelOpen] = useState(false);
   const [controlsVisible, setControlsVisible] = useState(true);
   const webcam = useWebcam();
 
