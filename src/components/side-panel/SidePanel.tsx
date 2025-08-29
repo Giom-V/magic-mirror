@@ -27,6 +27,7 @@ import "./side-panel.scss";
 import { useWebcam } from "../../hooks/use-webcam";
 import { LiveServerToolCall } from "@google/genai";
 import { disguiseCameraImage } from "../../tools/disguiseCameraImage";
+import { playOrUpdateMusic } from "../../tools/playMusic";
 
 const filterOptions = [
   { value: "conversations", label: "Conversations" },
@@ -103,6 +104,17 @@ export default function SidePanel({
       );
       if (clearCall) {
         setEditedImage(null);
+      }
+
+      const playMusicCall = toolCall.functionCalls.find(
+        (fc) => fc.name === "play_music"
+      );
+      if (playMusicCall) {
+        if (playMusicCall.args && playMusicCall.args.prompt) {
+          playOrUpdateMusic(playMusicCall.args.prompt as string);
+        } else {
+          console.error("prompt argument not found in tool call");
+        }
       }
     };
 

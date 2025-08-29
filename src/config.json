@@ -34,6 +34,20 @@
         },
         "required": ["json_graph"]
       }
+    },
+    "play_music": {
+      "name": "play_music",
+      "description": "Starts or updates a music stream with a given prompt. The prompt will be used to generate a list of musical styles and instruments.",
+      "parameters": {
+        "type": "OBJECT",
+        "properties": {
+          "prompt": {
+            "type": "STRING",
+            "description": "A description of the music to be generated, e.g. 'funky techno with a hint of jazz'."
+          }
+        },
+        "required": ["prompt"]
+      }
     }
   }
 }
