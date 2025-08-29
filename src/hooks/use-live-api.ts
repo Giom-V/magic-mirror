@@ -27,6 +27,8 @@ import {
   Type,
   Modality,
   MediaResolution,
+  StartSensitivity,
+  EndSensitivity,
 } from "@google/genai";
 
 export type UseLiveAPIResults = {
@@ -49,10 +51,11 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
   const [config, setConfig] = useState<LiveConnectConfig>(() => {
     const functionDeclarations = Object.values(appConfig.tools).map(
       (tool: any) => {
-        const declaration: FunctionDeclaration = {
+        const declaration = {
           name: tool.name,
           description: tool.description,
-        };
+          behavior: "NON_BLOCKING",
+        } as unknown as FunctionDeclaration;
 
         if (tool.parameters) {
           declaration.parameters = tool.parameters;
@@ -65,6 +68,16 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
     return {
       responseModalities: [Modality.AUDIO],
       mediaResolution: MediaResolution.MEDIA_RESOLUTION_MEDIUM,
+      proactivity: { proactiveAudio: true },
+      realtimeInputConfig: {
+        automaticActivityDetection: {
+          disabled: false,
+          startOfSpeechSensitivity: StartSensitivity.START_SENSITIVITY_LOW,
+          endOfSpeechSensitivity: EndSensitivity.END_SENSITIVITY_LOW,
+          prefixPaddingMs: 20,
+          silenceDurationMs: 100,
+        },
+      },
       contextWindowCompression: {
         triggerTokens: "25600",
         slidingWindow: { targetTokens: "12800" },
