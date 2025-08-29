@@ -66,7 +66,7 @@ function App() {
               borderRadius: "10px",
             }}
           >
-            NO API KEY
+            NO API KEY!
           </div>
         </div>
       )}
