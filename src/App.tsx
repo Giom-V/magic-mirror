@@ -50,12 +50,13 @@ function App() {
   const { connected, connect, disconnect } = useLiveAPIContext();
 
   useEffect(() => {
-    const startWebcam = async () => {
+    const startWebcamAndConnect = async () => {
       const stream = await webcam.start();
       setVideoStream(stream);
+      connect();
     };
-    startWebcam();
-  }, [webcam]);
+    startWebcamAndConnect();
+  }, [webcam, connect]);
 
   useEffect(() => {
     if (connected) {
