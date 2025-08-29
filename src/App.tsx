@@ -24,9 +24,6 @@ import cn from "classnames";
 import { LiveClientOptions } from "./types";
 
 const API_KEY = process.env.REACT_APP_GEMINI_API_KEY as string;
-if (typeof API_KEY !== "string") {
-  throw new Error("set REACT_APP_GEMINI_API_KEY in .env");
-}
 
 const apiOptions: LiveClientOptions = {
   apiKey: API_KEY,
@@ -40,6 +37,24 @@ function App() {
   // either the screen capture, the video or null, if null we hide it
   const [videoStream, setVideoStream] = useState<MediaStream | null>(null);
   const [editedImage, setEditedImage] = useState<string | null>(null);
+
+  if (!API_KEY) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+          fontSize: "2rem",
+          color: "red",
+          fontWeight: "bold",
+        }}
+      >
+        NO API KEY
+      </div>
+    );
+  }
 
   return (
     <div className="App">
