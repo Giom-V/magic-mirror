@@ -103,7 +103,13 @@ function ControlTray({
       ]);
     };
     if (connected && !muted && audioRecorder) {
-      audioRecorder.on("data", onData).on("volume", setInVolume).start();
+      audioRecorder
+        .on("data", onData)
+        .on("volume", setInVolume)
+        .start()
+        .catch((error) => {
+          console.error("Failed to start audio recorder:", error);
+        });
     } else {
       audioRecorder.stop();
     }
