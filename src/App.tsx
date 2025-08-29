@@ -49,14 +49,6 @@ function App() {
 
   const { connected, connect, disconnect } = useLiveAPIContext();
 
-  useEffect(() => {
-    const startWebcamAndConnect = async () => {
-      const stream = await webcam.start();
-      setVideoStream(stream);
-      connect();
-    };
-    startWebcamAndConnect();
-  }, [webcam, connect]);
 
   useEffect(() => {
     let timeoutId: NodeJS.Timeout;
