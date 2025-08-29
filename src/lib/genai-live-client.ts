@@ -171,6 +171,7 @@ export class GenAILiveClient extends EventEmitter<LiveClientEventTypes> {
 
   protected onclose(e: CloseEvent) {
     this.log(`server.close`, {
+      message: `disconnected ${e.reason ? `with reason: ${e.reason}` : ``}`,
       reason: e.reason,
       code: e.code,
       wasClean: e.wasClean,
