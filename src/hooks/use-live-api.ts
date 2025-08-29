@@ -27,6 +27,8 @@ import {
   Type,
   Modality,
   MediaResolution,
+  StartSensitivity,
+  EndSensitivity,
 } from "@google/genai";
 
 export type UseLiveAPIResults = {
@@ -69,6 +71,10 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
       realtimeInputConfig: {
         automaticActivityDetection: {
           disabled: false,
+          startOfSpeechSensitivity: StartSensitivity.START_SENSITIVITY_LOW,
+          endOfSpeechSensitivity: EndSensitivity.END_SENSITIVITY_LOW,
+          prefixPaddingMs: 20,
+          silenceDurationMs: 100,
         },
       },
       contextWindowCompression: {
