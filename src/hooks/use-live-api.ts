@@ -54,6 +54,7 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
         const declaration: FunctionDeclaration = {
           name: tool.name,
           description: tool.description,
+          behavior: "NON_BLOCKING" as any,
         };
 
         if (tool.parameters) {
