@@ -45,8 +45,8 @@ function AltairComponent() {
                 {
                   response: {
                     output: { success: true },
-                    scheduling: "SILENT" as any,
-                  },
+                    scheduling: "SILENT",
+                  } as any,
                   id: fc.id,
                   name: fc.name,
                 },

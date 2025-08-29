@@ -51,11 +51,11 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
   const [config, setConfig] = useState<LiveConnectConfig>(() => {
     const functionDeclarations = Object.values(appConfig.tools).map(
       (tool: any) => {
-        const declaration: FunctionDeclaration = {
+        const declaration = {
           name: tool.name,
           description: tool.description,
-          behavior: "NON_BLOCKING" as any,
-        };
+          behavior: "NON_BLOCKING",
+        } as unknown as FunctionDeclaration;
 
         if (tool.parameters) {
           declaration.parameters = tool.parameters;
