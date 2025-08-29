@@ -38,26 +38,38 @@ function App() {
   const [videoStream, setVideoStream] = useState<MediaStream | null>(null);
   const [editedImage, setEditedImage] = useState<string | null>(null);
 
-  if (!API_KEY) {
-    return (
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "100vh",
-          fontSize: "2rem",
-          color: "red",
-          fontWeight: "bold",
-        }}
-      >
-        NO API KEY
-      </div>
-    );
-  }
-
   return (
     <div className="App">
+      {!API_KEY && (
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0, 0, 0, 0.7)",
+            color: "white",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 1000,
+          }}
+        >
+          <div
+            style={{
+              fontSize: "2rem",
+              color: "red",
+              fontWeight: "bold",
+              backgroundColor: "white",
+              padding: "20px",
+              borderRadius: "10px",
+            }}
+          >
+            NO API KEY
+          </div>
+        </div>
+      )}
       <LiveAPIProvider options={apiOptions}>
         <div className="streaming-console">
           <SidePanel
