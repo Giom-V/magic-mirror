@@ -1,5 +1,27 @@
-# Ignore everything except app.yaml and the build directory
-*
-!app.yaml
-!build
-!build/**
+# This file specifies files that are *not* uploaded to Google Cloud when
+# deploying. For more information, see:
+# https://cloud.google.com/sdk/gcloud/reference/topic/gcloudignore
+
+.gcloudignore
+.dockerignore
+.gitignore
+Dockerfile
+node_modules
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# Build artifacts
+/build
+
+# Exclude source control metadata
+.git
+.svn
+
+# IDE files
+.idea
+*.swp
+*.swo
+
+# Misc
+.DS_Store

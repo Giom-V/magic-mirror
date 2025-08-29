@@ -1,0 +1,25 @@
+server {
+  listen __PORT__;
+  server_name localhost;
+
+  # Root and index files
+  root /usr/share/nginx/html;
+  index index.html index.htm;
+
+  location / {
+    # Try to serve the file directly, otherwise fall back to index.html
+    try_files $uri /index.html;
+  }
+
+  # Media: redirect if accessed directly
+  location ~* \.(?:ico|gif|jpe?g|png)$ {
+    expires 1y;
+    add_header Cache-Control "public";
+  }
+
+  # CSS and Javascript
+  location ~* \.(?:css|js)$ {
+    expires 1y;
+    add_header Cache-Control "public";
+  }
+}
