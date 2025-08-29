@@ -32,6 +32,8 @@ export type ControlTrayProps = {
   supportsVideo: boolean;
   onVideoStreamChange?: (stream: MediaStream | null) => void;
   enableEditingSettings?: boolean;
+  muted: boolean;
+  onMuteChange: (muted: boolean) => void;
 };
 
 type MediaStreamButtonProps = {
@@ -64,6 +66,8 @@ function ControlTray({
   onVideoStreamChange = () => {},
   supportsVideo,
   enableEditingSettings,
+  muted,
+  onMuteChange,
 }: ControlTrayProps) {
   const videoStreams = [useWebcam(), useScreenCapture()];
   const [activeVideoStream, setActiveVideoStream] =
@@ -71,7 +75,6 @@ function ControlTray({
   const [webcam, screenCapture] = videoStreams;
   const [inVolume, setInVolume] = useState(0);
   const [audioRecorder] = useState(() => new AudioRecorder());
-  const [muted, setMuted] = useState(false);
   const renderCanvasRef = useRef<HTMLCanvasElement>(null);
   const connectButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -100,7 +103,13 @@ function ControlTray({
       ]);
     };
     if (connected && !muted && audioRecorder) {
-      audioRecorder.on("data", onData).on("volume", setInVolume).start();
+      audioRecorder
+        .on("data", onData)
+        .on("volume", setInVolume)
+        .start()
+        .catch((error) => {
+          console.error("Failed to start audio recorder:", error);
+        });
     } else {
       audioRecorder.stop();
     }
@@ -165,7 +174,7 @@ function ControlTray({
       <nav className={cn("actions-nav", { disabled: !connected })}>
         <button
           className={cn("action-button mic-button")}
-          onClick={() => setMuted(!muted)}
+          onClick={() => onMuteChange(!muted)}
         >
           {!muted ? (
             <span className="material-symbols-outlined filled">mic</span>
