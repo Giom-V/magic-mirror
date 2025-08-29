@@ -14,6 +14,26 @@ To get started, [create a free Gemini API key](https://aistudio.google.com/apike
 $ npm install && npm start
 ```
 
+## Controls
+
+### Keyboard Shortcuts
+
+| Key | Action |
+| --- | --- |
+| `Enter` | Connect/Disconnect from the live stream. |
+| `Space` | Press to talk. |
+| `i` | Apply a "fantasy character" disguise to the camera image. |
+| `Delete` | Remove the image disguise. |
+
+### UI Controls
+
+| Icon | Action |
+| --- | --- |
+| `mic` / `mic_off` | Mute/Unmute the microphone. |
+| `play_arrow` / `pause` | Connect/Disconnect from the live stream. |
+| `present_to_all` / `cancel_presentation` | Start/Stop screen sharing. |
+| `videocam` / `videocam_off` | Turn on/off the camera. |
+
 We have provided several example applications on other branches of this repository:
 
 - [demos/GenExplainer](https://github.com/google-gemini/multimodal-live-api-web-console/tree/demos/genexplainer)
