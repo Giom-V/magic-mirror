@@ -59,29 +59,27 @@ function App() {
   }, [webcam, connect]);
 
   useEffect(() => {
-    if (connected) {
-      setControlsVisible(false);
-    } else {
-      setControlsVisible(true);
-    }
-  }, [connected]);
-
-  useEffect(() => {
     let timeoutId: NodeJS.Timeout;
-    const handleMouseMove = () => {
+
+    const showAndHide = () => {
       setControlsVisible(true);
       clearTimeout(timeoutId);
       timeoutId = setTimeout(() => {
-        if (connected) {
-          setControlsVisible(false);
-        }
+        setControlsVisible(false);
       }, 3000);
     };
 
-    window.addEventListener("mousemove", handleMouseMove);
+    if (!connected) {
+      setControlsVisible(true);
+      return;
+    }
+
+    setControlsVisible(false);
+
+    window.addEventListener("mousemove", showAndHide);
 
     return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mousemove", showAndHide);
       clearTimeout(timeoutId);
     };
   }, [connected]);
