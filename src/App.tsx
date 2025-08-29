@@ -14,14 +14,19 @@
  * limitations under the License.
  */
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect, useCallback } from "react";
 import "./App.scss";
-import { LiveAPIProvider } from "./contexts/LiveAPIContext";
+import { useWebcam } from "./hooks/use-webcam";
+import { LiveAPIProvider, useLiveAPIContext } from "./contexts/LiveAPIContext";
 import SidePanel from "./components/side-panel/SidePanel";
 import { Altair } from "./components/altair/Altair";
 import ControlTray from "./components/control-tray/ControlTray";
+import MagicEffect from "./components/magic-effect/MagicEffect";
 import cn from "classnames";
 import { LiveClientOptions } from "./types";
+import { GoogleGenAI, Part } from "@google/genai";
+import { disguiseCameraImage } from "./tools/disguiseCameraImage";
+import config from "./config.json";
 
 const API_KEY = process.env.REACT_APP_GEMINI_API_KEY as string;
 
@@ -37,6 +42,65 @@ function App() {
   // either the screen capture, the video or null, if null we hide it
   const [videoStream, setVideoStream] = useState<MediaStream | null>(null);
   const [editedImage, setEditedImage] = useState<string | null>(null);
+  const [muted, setMuted] = useState(false);
+  const [controlsVisible, setControlsVisible] = useState(true);
+  const webcam = useWebcam();
+
+  const { connected, connect, disconnect } = useLiveAPIContext();
+
+
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+
+    const showAndHide = () => {
+      setControlsVisible(true);
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        setControlsVisible(false);
+      }, 3000);
+    };
+
+    if (!connected) {
+      setControlsVisible(true);
+      return;
+    }
+
+    setControlsVisible(false);
+
+    window.addEventListener("mousemove", showAndHide);
+
+    return () => {
+      window.removeEventListener("mousemove", showAndHide);
+      clearTimeout(timeoutId);
+    };
+  }, [connected]);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Enter") {
+        if (connected) {
+          disconnect();
+        } else {
+          connect();
+        }
+      } else if (event.key === " ") {
+        if (!connected) {
+          connect();
+        }
+        setMuted(false);
+      } else if (event.key === "i") {
+        disguiseCameraImage("a fantasy character", webcam, setEditedImage);
+      } else if (event.key === "Delete") {
+        setEditedImage(null);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [connected, connect, disconnect, setMuted, webcam, setEditedImage]);
 
   return (
     <div className="App">
@@ -79,9 +143,7 @@ function App() {
           <main>
             <div className="main-app-area">
               {/* APP goes here */}
-              {editedImage && (
-                <img src={editedImage} alt="edited" className="edited-image" />
-              )}
+              {editedImage && <MagicEffect imageUrl={editedImage} />}
               <Altair />
               <video
                 className={cn("stream", {
@@ -93,19 +155,30 @@ function App() {
               />
             </div>
 
+          <div className={cn("control-tray-container", { visible: controlsVisible })}>
             <ControlTray
               videoRef={videoRef}
               supportsVideo={true}
               onVideoStreamChange={setVideoStream}
               enableEditingSettings={true}
+              muted={muted}
+              onMuteChange={setMuted}
             >
               {/* put your own buttons here */}
             </ControlTray>
-          </main>
-        </div>
-      </LiveAPIProvider>
+          </div>
+        </main>
+      </div>
     </div>
   );
 }
 
-export default App;
+function AppWrapper() {
+  return (
+    <LiveAPIProvider options={apiOptions}>
+      <App />
+    </LiveAPIProvider>
+  );
+}
+
+export default AppWrapper;

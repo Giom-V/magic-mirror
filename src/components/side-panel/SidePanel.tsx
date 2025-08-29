@@ -17,7 +17,7 @@
 import "./react-select.scss";
 import config from "../../config.json";
 import cn from "classnames";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { RiSidebarFoldLine, RiSidebarUnfoldLine } from "react-icons/ri";
 import Select from "react-select";
 import { useLiveAPIContext } from "../../contexts/LiveAPIContext";
@@ -42,7 +42,7 @@ export default function SidePanel({
   setEditedImage: (image: string | null) => void;
 }) {
   const { connected, client } = useLiveAPIContext();
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
   const loggerRef = useRef<HTMLDivElement>(null);
   const loggerLastHeightRef = useRef<number>(-1);
   const { log, logs } = useLoggerStore();
@@ -54,8 +54,6 @@ export default function SidePanel({
   } | null>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const webcam = useWebcam();
-
-
 
   //scroll the log to the bottom when new logs come in
   useEffect(() => {
@@ -140,15 +138,6 @@ export default function SidePanel({
     <div className={`side-panel ${open ? "open" : ""}`}>
       <header className="top">
         <h2>Console</h2>
-        {open ? (
-          <button className="opener" onClick={() => setOpen(false)}>
-            <RiSidebarFoldLine color="#b4b8bb" />
-          </button>
-        ) : (
-          <button className="opener" onClick={() => setOpen(true)}>
-            <RiSidebarUnfoldLine color="#b4b8bb" />
-          </button>
-        )}
       </header>
       <section className="indicators">
         <Select

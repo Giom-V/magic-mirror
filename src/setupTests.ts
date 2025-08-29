@@ -21,4 +21,21 @@
 import "core-js/features/structured-clone";
 import "@testing-library/jest-dom";
 
+// Mock MediaStream
+class MockMediaStream {
+  getTracks() {
+    return [];
+  }
+  addTrack(track: any) {}
+  removeTrack(track: any) {}
+}
+(global as any).MediaStream = MockMediaStream;
+
 process.env.REACT_APP_GEMINI_API_KEY = "test-key";
+
+Object.defineProperty(global.navigator, "mediaDevices", {
+  value: {
+    getUserMedia: jest.fn().mockResolvedValue(new MediaStream()),
+  },
+  writable: true,
+});
