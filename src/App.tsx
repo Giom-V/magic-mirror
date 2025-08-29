@@ -46,6 +46,7 @@ function App() {
   const [videoStream, setVideoStream] = useState<MediaStream | null>(null);
   const [editedImage, setEditedImage] = useState<string | null>(null);
   const [muted, setMuted] = useState(false);
+  const [sidePanelOpen, setSidePanelOpen] = useState(true);
   const [controlsVisible, setControlsVisible] = useState(true);
   const webcam = useWebcam();
 
@@ -89,8 +90,12 @@ function App() {
       } else if (event.key === " ") {
         if (!connected) {
           connect();
+          setMuted(false);
+        } else {
+          setMuted(!muted);
         }
-        setMuted(false);
+      } else if (event.key === "d") {
+        setSidePanelOpen(!sidePanelOpen);
       } else if (event.key === "i") {
         disguiseCameraImage("a fantasy character", webcam, setEditedImage);
       } else if (event.key === "Delete") {
@@ -108,7 +113,12 @@ function App() {
   return (
     <div className="App">
       <div className="streaming-console">
-        <SidePanel editedImage={editedImage} setEditedImage={setEditedImage} />
+        <SidePanel
+          editedImage={editedImage}
+          setEditedImage={setEditedImage}
+          open={sidePanelOpen}
+          onToggle={() => setSidePanelOpen(!sidePanelOpen)}
+        />
         <main>
           <div className="main-app-area">
             {/* APP goes here */}

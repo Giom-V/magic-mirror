@@ -37,12 +37,15 @@ const filterOptions = [
 export default function SidePanel({
   editedImage,
   setEditedImage,
+  open,
+  onToggle,
 }: {
   editedImage: string | null;
   setEditedImage: (image: string | null) => void;
+  open: boolean;
+  onToggle: () => void;
 }) {
   const { connected, client } = useLiveAPIContext();
-  const [open, setOpen] = useState(false);
   const loggerRef = useRef<HTMLDivElement>(null);
   const loggerLastHeightRef = useRef<number>(-1);
   const { log, logs } = useLoggerStore();
@@ -138,6 +141,9 @@ export default function SidePanel({
     <div className={`side-panel ${open ? "open" : ""}`}>
       <header className="top">
         <h2>Console</h2>
+        <button className="action-button" onClick={onToggle}>
+          {open ? <RiSidebarFoldLine /> : <RiSidebarUnfoldLine />}
+        </button>
       </header>
       <section className="indicators">
         <Select
