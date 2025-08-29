@@ -1,13 +1,13 @@
 .side-panel {
   background: var(--Neutral-00);
-  width: 0px;
+  width: 40px;
   /* when closed */
   display: flex;
   flex-direction: column;
   height: 100vh;
   transition: all 0.2s ease-in;
   font-family: Arial, sans-serif;
-  border-right: none;
+  border-right: 1px solid var(--gray-600);
   color: var(--Neutral-90, #e1e2e3);
   font-family: var(--font-family);
   font-size: 13px;
@@ -210,7 +210,6 @@
 .side-panel.open {
   width: 400px;
   height: 100vh;
-  border-right: 1px solid var(--gray-600);
 }
 
 .side-panel-responses,
