@@ -1,9 +1,18 @@
-import { GoogleGenAI, Session, FunctionDeclaration, Type, Schema, GenerateContentResponse } from "@google/genai";
+import {
+  GoogleGenAI,
+  FunctionDeclaration,
+  Type,
+  Schema,
+  GenerateContentResponse,
+  LiveMusicSession,
+  LiveMusicServerMessage,
+  LiveMusicGenerationConfig,
+} from "@google/genai";
 import { AudioStreamer } from "../lib/audio-streamer";
 import { audioContext, base64ToArrayBuffer } from "../lib/utils";
 import config from "../config.json";
 
-let session: any | null = null;
+let session: LiveMusicSession | null = null;
 let audioStreamer: AudioStreamer | null = null;
 
 interface WeightedPrompt {
@@ -55,7 +64,7 @@ const client = new GoogleGenAI({
 
 async function generatePrompts(prompt: string): Promise<WeightedPrompt[]> {
   const result: GenerateContentResponse = await ai.models.generateContent({
-    model: "gemini-2.5-flash-preview-256k",
+    model: "gemini-2.5-flash",
     contents: [
       {
         role: "user",
@@ -70,7 +79,7 @@ async function generatePrompts(prompt: string): Promise<WeightedPrompt[]> {
     },
   });
 
-  if (result.candidates && result.candidates[0].content.parts) {
+  if (result.candidates && result.candidates.length > 0 && result.candidates[0].content.parts) {
     const part = result.candidates[0].content.parts[0];
     if (part.text) {
       try {
@@ -94,24 +103,22 @@ export async function playOrUpdateMusic(prompt: string) {
     return;
   }
 
-  if (session && session.isOpen()) {
+  if (session) {
     console.log("Updating music prompts...", prompts);
     await session.setWeightedPrompts({ weightedPrompts: prompts });
     return;
   }
 
   console.log("Starting music with prompts...", prompts);
-  if (session) {
-    await session.close();
-    session = null;
-  }
 
   const streamer = await getAudioStreamer();
 
+  // The TS compiler in this environment doesn't see `.music`, so we cast to any.
+  // The resulting session should be a `LiveMusicSession`.
   session = await (client.live as any).music.connect({
     model: "models/lyria-realtime-exp",
     callbacks: {
-      onmessage: (message: any) => {
+      onmessage: (message: LiveMusicServerMessage) => {
         if (message.serverContent?.audioChunks) {
           for (const chunk of message.serverContent.audioChunks) {
             const audioData = new Uint8Array(base64ToArrayBuffer(chunk.data));
@@ -119,7 +126,10 @@ export async function playOrUpdateMusic(prompt: string) {
           }
         }
       },
-      onerror: (error: any) => console.error("music session error:", error),
+      onerror: (error: ErrorEvent) => {
+        console.error("music session error:", error);
+        session = null;
+      },
       onclose: () => {
         console.log("Lyria RealTime stream closed.");
         session = null;
@@ -131,19 +141,21 @@ export async function playOrUpdateMusic(prompt: string) {
     weightedPrompts: prompts,
   });
 
+  const config: LiveMusicGenerationConfig = {
+    bpm: 120,
+    audioFormat: "pcm16",
+    sampleRateHz: 24000,
+  };
+
   await session.setMusicGenerationConfig({
-    musicGenerationConfig: {
-      bpm: 120,
-      audioFormat: "pcm16",
-      sampleRateHz: 24000,
-    },
+    musicGenerationConfig: config,
   });
 
   await session.play();
 }
 
 export async function stopMusic() {
-  if (session && session.isOpen()) {
+  if (session) {
     console.log("Stopping music...");
     await session.stop();
   }
