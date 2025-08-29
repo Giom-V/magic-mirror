@@ -185,3 +185,12 @@ body {
   border-radius: 32px;
   max-height: fit-content;
 }
+
+.control-tray-container {
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.control-tray-container.visible {
+  opacity: 1;
+}

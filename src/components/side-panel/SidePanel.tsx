@@ -23,8 +23,7 @@ import { useLiveAPIContext } from "../../contexts/LiveAPIContext";
 import { useLoggerStore } from "../../lib/store-logger";
 import Logger, { LoggerFilterType } from "../logger/Logger";
 import "./side-panel.scss";
-import { useWebcam } from "../../hooks/use-webcam";
-import { GoogleGenAI, Part, LiveServerToolCall } from "@google/genai";
+import { LiveServerToolCall } from "@google/genai";
 
 const filterOptions = [
   { value: "conversations", label: "Conversations" },
@@ -51,64 +50,6 @@ export default function SidePanel({
     label: string;
   } | null>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  const webcam = useWebcam();
-
-  function fileToGenerativePart(data: string, mimeType: string): Part {
-    return {
-      inlineData: {
-        data,
-        mimeType,
-      },
-    };
-  }
-
-  const editCameraImage = useCallback(async () => {
-    console.log("Using tool: edit_camera_image");
-    const stream = await webcam.start();
-    const video = document.createElement("video");
-    video.srcObject = stream;
-    video.autoplay = true;
-    video.play();
-
-    video.addEventListener("loadeddata", async () => {
-      const canvas = document.createElement("canvas");
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) {
-        return;
-      }
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      const dataUrl = canvas.toDataURL("image/jpeg");
-      const base64Data = dataUrl.split(",")[1];
-
-      const ai = new GoogleGenAI({
-        apiKey: process.env.REACT_APP_GEMINI_API_KEY as string,
-      });
-      const imagePart = fileToGenerativePart(base64Data, "image/jpeg");
-
-      const response = await ai.models.generateContent({
-        model: config.imageEditModel,
-        contents: [imagePart, config.tools.editCameraImage.prompt],
-      });
-
-      if (
-        response.candidates &&
-        response.candidates.length > 0 &&
-        response.candidates[0].content &&
-        response.candidates[0].content.parts
-      ) {
-        for (const part of response.candidates[0].content.parts) {
-          if (part.inlineData && part.inlineData.data) {
-            const base64ImageBytes: string = part.inlineData.data;
-            const imageUrl = `data:image/png;base64,${base64ImageBytes}`;
-            setEditedImage(imageUrl);
-          }
-        }
-      }
-      webcam.stop();
-    });
-  }, [webcam, setEditedImage]);
 
   //scroll the log to the bottom when new logs come in
   useEffect(() => {
@@ -136,13 +77,6 @@ export default function SidePanel({
         return;
       }
 
-      const editCall = toolCall.functionCalls.find(
-        (fc) => fc.name === config.tools.editCameraImage.name
-      );
-      if (editCall) {
-        editCameraImage();
-      }
-
       const clearCall = toolCall.functionCalls.find(
         (fc) => fc.name === config.tools.clearImage.name
       );
@@ -155,17 +89,10 @@ export default function SidePanel({
     return () => {
       client.off("toolcall", onToolCall);
     };
-  }, [client, editCameraImage, setEditedImage]);
+  }, [client, setEditedImage]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "i") {
-        editCameraImage();
-      }
-      if (event.key === "c") {
-        console.log("Using tool: clear_image_display");
-        setEditedImage(null);
-      }
       if (event.key.toLowerCase() === "d") {
         setOpen((prevOpen) => !prevOpen);
       }
@@ -176,7 +103,7 @@ export default function SidePanel({
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [editCameraImage]);
+  }, []);
 
   const handleSubmit = () => {
     client.send([{ text: textInput }]);
@@ -259,12 +186,6 @@ export default function SidePanel({
             onClick={handleSubmit}
           >
             send
-          </button>
-          <button
-            className="send-button material-symbols-outlined filled"
-            onClick={editCameraImage}
-          >
-            mood
           </button>
         </div>
       </div>

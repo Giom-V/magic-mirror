@@ -22,3 +22,10 @@ import "core-js/features/structured-clone";
 import "@testing-library/jest-dom";
 
 process.env.REACT_APP_GEMINI_API_KEY = "test-key";
+
+Object.defineProperty(global.navigator, "mediaDevices", {
+  value: {
+    getUserMedia: jest.fn().mockResolvedValue({}),
+  },
+  writable: true,
+});
