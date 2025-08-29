@@ -1,4 +1,4 @@
-import { GoogleGenAI, Session, FunctionDeclaration, Type, Schema, GenerateContentResult } from "@google/genai";
+import { GoogleGenAI, Session, FunctionDeclaration, Type, Schema, GenerateContentResponse } from "@google/genai";
 import { AudioStreamer } from "../lib/audio-streamer";
 import { audioContext, base64ToArrayBuffer } from "../lib/utils";
 import config from "../config.json";
@@ -54,7 +54,7 @@ const client = new GoogleGenAI({
 });
 
 async function generatePrompts(prompt: string): Promise<WeightedPrompt[]> {
-  const result: GenerateContentResult = await ai.models.generateContent({
+  const result: GenerateContentResponse = await ai.models.generateContent({
     model: "gemini-2.5-flash-preview-256k",
     contents: [
       {
@@ -70,9 +70,8 @@ async function generatePrompts(prompt: string): Promise<WeightedPrompt[]> {
     },
   });
 
-  const { response } = result;
-  if (response.candidates && response.candidates[0].content.parts) {
-    const part = response.candidates[0].content.parts[0];
+  if (result.candidates && result.candidates[0].content.parts) {
+    const part = result.candidates[0].content.parts[0];
     if (part.text) {
       try {
         const jsonResponse = JSON.parse(part.text);
