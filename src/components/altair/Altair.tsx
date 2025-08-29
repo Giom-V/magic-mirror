@@ -43,7 +43,10 @@ function AltairComponent() {
             client.sendToolResponse({
               functionResponses: [
                 {
-                  response: { output: { success: true } },
+                  response: {
+                    output: { success: true },
+                    scheduling: "SILENT",
+                  } as any,
                   id: fc.id,
                   name: fc.name,
                 },

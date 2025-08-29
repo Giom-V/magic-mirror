@@ -18,12 +18,15 @@ import "./react-select.scss";
 import config from "../../config.json";
 import cn from "classnames";
 import { useEffect, useRef, useState, useCallback } from "react";
+import { RiSidebarFoldLine, RiSidebarUnfoldLine } from "react-icons/ri";
 import Select from "react-select";
 import { useLiveAPIContext } from "../../contexts/LiveAPIContext";
 import { useLoggerStore } from "../../lib/store-logger";
 import Logger, { LoggerFilterType } from "../logger/Logger";
 import "./side-panel.scss";
+import { useWebcam } from "../../hooks/use-webcam";
 import { LiveServerToolCall } from "@google/genai";
+import { disguiseCameraImage } from "../../tools/disguiseCameraImage";
 
 const filterOptions = [
   { value: "conversations", label: "Conversations" },
@@ -50,6 +53,7 @@ export default function SidePanel({
     label: string;
   } | null>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const webcam = useWebcam();
 
   //scroll the log to the bottom when new logs come in
   useEffect(() => {
@@ -77,6 +81,21 @@ export default function SidePanel({
         return;
       }
 
+      const editCall = toolCall.functionCalls.find(
+        (fc) => fc.name === config.tools.disguise_camera_image.name
+      );
+      if (editCall) {
+        if (editCall.args && editCall.args.disguise_character) {
+          disguiseCameraImage(
+            editCall.args.disguise_character as string,
+            webcam,
+            setEditedImage
+          );
+        } else {
+          console.error("disguise_character argument not found in tool call");
+        }
+      }
+
       const clearCall = toolCall.functionCalls.find(
         (fc) => fc.name === config.tools.clearImage.name
       );
@@ -89,12 +108,13 @@ export default function SidePanel({
     return () => {
       client.off("toolcall", onToolCall);
     };
-  }, [client, setEditedImage]);
+  }, [client, webcam, setEditedImage]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key.toLowerCase() === "d") {
-        setOpen((prevOpen) => !prevOpen);
+      if (event.key === "c") {
+        console.log("Using tool: clear_image_display");
+        setEditedImage(null);
       }
     };
 
@@ -103,7 +123,7 @@ export default function SidePanel({
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, []);
+  }, [setEditedImage]);
 
   const handleSubmit = () => {
     client.send([{ text: textInput }]);

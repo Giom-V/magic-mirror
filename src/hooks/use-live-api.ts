@@ -27,6 +27,8 @@ import {
   Type,
   Modality,
   MediaResolution,
+  StartSensitivity,
+  EndSensitivity,
 } from "@google/genai";
 
 export type UseLiveAPIResults = {
@@ -47,44 +49,35 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
 
   const [model, setModel] = useState<string>(appConfig.liveModel);
   const [config, setConfig] = useState<LiveConnectConfig>(() => {
-    const editCameraImage = {
-      name: appConfig.tools.editCameraImage.name,
-      description: appConfig.tools.editCameraImage.description,
-      parameters: {
-        type: Type.OBJECT,
-        properties: {},
-      },
-    };
+    const functionDeclarations = Object.values(appConfig.tools).map(
+      (tool: any) => {
+        const declaration = {
+          name: tool.name,
+          description: tool.description,
+          behavior: "NON_BLOCKING",
+        } as unknown as FunctionDeclaration;
 
-    const clearImage = {
-      name: appConfig.tools.clearImage.name,
-      description: appConfig.tools.clearImage.description,
-      parameters: {
-        type: Type.OBJECT,
-        properties: {},
-      },
-    };
+        if (tool.parameters) {
+          declaration.parameters = tool.parameters;
+        }
 
-    const renderAltair = {
-      name: appConfig.tools.renderAltair.name,
-      description: appConfig.tools.renderAltair.description,
-      parameters: {
-        type: Type.OBJECT,
-        properties: {
-          json_graph: {
-            type: Type.STRING,
-            description:
-              appConfig.tools.renderAltair.parameters.properties.json_graph
-                .description,
-          },
-        },
-        required: appConfig.tools.renderAltair.parameters.required,
-      },
-    };
+        return declaration;
+      }
+    );
 
     return {
       responseModalities: [Modality.AUDIO],
       mediaResolution: MediaResolution.MEDIA_RESOLUTION_MEDIUM,
+      proactivity: { proactiveAudio: true },
+      realtimeInputConfig: {
+        automaticActivityDetection: {
+          disabled: false,
+          startOfSpeechSensitivity: StartSensitivity.START_SENSITIVITY_LOW,
+          endOfSpeechSensitivity: EndSensitivity.END_SENSITIVITY_LOW,
+          prefixPaddingMs: 20,
+          silenceDurationMs: 100,
+        },
+      },
       contextWindowCompression: {
         triggerTokens: "25600",
         slidingWindow: { targetTokens: "12800" },
@@ -103,7 +96,7 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
       tools: [
         { googleSearch: {} },
         {
-          functionDeclarations: [editCameraImage, clearImage, renderAltair],
+          functionDeclarations,
         },
       ],
     };
