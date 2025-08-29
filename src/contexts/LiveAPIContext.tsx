@@ -16,6 +16,7 @@
 
 import { createContext, FC, ReactNode, useContext } from "react";
 import { useLiveAPI, UseLiveAPIResults } from "../hooks/use-live-api";
+import { GenAILiveClient } from "../lib/genai-live-client";
 import { LiveClientOptions } from "../types";
 
 const LiveAPIContext = createContext<UseLiveAPIResults | undefined>(undefined);
@@ -25,14 +26,65 @@ export type LiveAPIProviderProps = {
   options: LiveClientOptions;
 };
 
-export const LiveAPIProvider: FC<LiveAPIProviderProps> = ({
+const noOp = () => {};
+const noOpPromise = () => Promise.resolve();
+
+const mockClient = {
+  on: noOp,
+  off: noOp,
+  emit: noOp,
+  connect: noOpPromise,
+  disconnect: () => true,
+  send: noOp,
+  sendRealtimeInput: noOp,
+  sendToolResponse: noOp,
+  status: "disconnected" as const,
+  session: null,
+  model: null,
+  getConfig: () => ({}),
+};
+
+const mockLiveAPIResults: UseLiveAPIResults = {
+  client: mockClient as unknown as GenAILiveClient,
+  setConfig: noOp,
+  config: {},
+  model: "",
+  setModel: noOp,
+  connected: false,
+  connect: noOpPromise,
+  disconnect: noOpPromise,
+  volume: 0,
+};
+
+// This component contains the hook and should only be rendered when we have an API key.
+const LiveAPIProviderWithHook: FC<LiveAPIProviderProps> = ({
   options,
   children,
 }) => {
   const liveAPI = useLiveAPI(options);
-
   return (
     <LiveAPIContext.Provider value={liveAPI}>
+      {children}
+    </LiveAPIContext.Provider>
+  );
+};
+
+// This is the main exported provider. It decides whether to use the real or mock provider.
+export const LiveAPIProvider: FC<LiveAPIProviderProps> = ({
+  options,
+  children,
+}) => {
+  if (options.apiKey) {
+    return (
+      <LiveAPIProviderWithHook options={options}>
+        {children}
+      </LiveAPIProviderWithHook>
+    );
+  }
+
+  // If no API key, provide the mock context value.
+  return (
+    <LiveAPIContext.Provider value={mockLiveAPIResults}>
       {children}
     </LiveAPIContext.Provider>
   );
