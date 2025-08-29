@@ -1,28 +1,31 @@
-import { GoogleGenAI, Session, WeightedPrompt, FunctionDeclaration } from "@google/genai";
+import { GoogleGenAI, Session, FunctionDeclaration, Type, Schema, GenerateContentResult } from "@google/genai";
 import { AudioStreamer } from "../lib/audio-streamer";
 import { audioContext, base64ToArrayBuffer } from "../lib/utils";
 import config from "../config.json";
 
-let session: Session | null = null;
+let session: any | null = null;
 let audioStreamer: AudioStreamer | null = null;
 
-// The `pydantic` model from the Python example is not directly available in JS/TS.
-// I will define the schema for the structured output directly.
-const MusicPrompts = {
-  type: "OBJECT",
+interface WeightedPrompt {
+  text: string;
+  weight: number;
+}
+
+const MusicPrompts: Schema = {
+  type: Type.OBJECT,
   properties: {
     prompts: {
-      type: "ARRAY",
+      type: Type.ARRAY,
       description: "List of musical prompts.",
       items: {
-        type: "OBJECT",
+        type: Type.OBJECT,
         properties: {
           text: {
-            type: "STRING",
+            type: Type.STRING,
             description: "The musical prompt, e.g., 'Funky bassline' or '80s synth melody'."
           },
           weight: {
-            type: "NUMBER",
+            type: Type.NUMBER,
             description: "The weight of the prompt, from 0.0 to 2.0."
           }
         },
@@ -51,7 +54,7 @@ const client = new GoogleGenAI({
 });
 
 async function generatePrompts(prompt: string): Promise<WeightedPrompt[]> {
-  const result = await ai.models.generateContent({
+  const result: GenerateContentResult = await ai.models.generateContent({
     model: "gemini-2.5-flash-preview-256k",
     contents: [
       {
@@ -67,8 +70,9 @@ async function generatePrompts(prompt: string): Promise<WeightedPrompt[]> {
     },
   });
 
-  if (result.response.candidates && result.response.candidates[0].content.parts) {
-    const part = result.response.candidates[0].content.parts[0];
+  const { response } = result;
+  if (response.candidates && response.candidates[0].content.parts) {
+    const part = response.candidates[0].content.parts[0];
     if (part.text) {
       try {
         const jsonResponse = JSON.parse(part.text);
@@ -105,10 +109,10 @@ export async function playOrUpdateMusic(prompt: string) {
 
   const streamer = await getAudioStreamer();
 
-  session = await client.live.music.connect({
+  session = await (client.live as any).music.connect({
     model: "models/lyria-realtime-exp",
     callbacks: {
-      onmessage: (message) => {
+      onmessage: (message: any) => {
         if (message.serverContent?.audioChunks) {
           for (const chunk of message.serverContent.audioChunks) {
             const audioData = new Uint8Array(base64ToArrayBuffer(chunk.data));
@@ -116,7 +120,7 @@ export async function playOrUpdateMusic(prompt: string) {
           }
         }
       },
-      onerror: (error) => console.error("music session error:", error),
+      onerror: (error: any) => console.error("music session error:", error),
       onclose: () => {
         console.log("Lyria RealTime stream closed.");
         session = null;
