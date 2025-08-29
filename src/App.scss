@@ -116,7 +116,7 @@ body {
 }
 
 .streaming-console {
-  background: #000;
+  background: var(--Neutral-15);
   color: var(--gray-300);
   display: flex;
   height: 100vh;
@@ -184,13 +184,4 @@ body {
   max-width: 90%;
   border-radius: 32px;
   max-height: fit-content;
-}
-
-.control-tray-container {
-  opacity: 0;
-  transition: opacity 0.3s ease-in-out;
-}
-
-.control-tray-container.visible {
-  opacity: 1;
 }
