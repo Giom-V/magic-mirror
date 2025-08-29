@@ -35,7 +35,9 @@ export async function disguiseCameraImage(
     const dataUrl = canvas.toDataURL("image/jpeg");
     const base64Data = dataUrl.split(",")[1];
 
-    const ai = new GoogleGenAI(process.env.REACT_APP_GEMINI_API_KEY as string);
+    const ai = new GoogleGenAI({
+      apiKey: process.env.REACT_APP_GEMINI_API_KEY as string,
+    });
     const imagePart = fileToGenerativePart(base64Data, "image/jpeg");
 
     const response = await ai.models.generateContent({
