@@ -47,40 +47,20 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
 
   const [model, setModel] = useState<string>(appConfig.liveModel);
   const [config, setConfig] = useState<LiveConnectConfig>(() => {
-    const editCameraImage = {
-      name: appConfig.tools.editCameraImage.name,
-      description: appConfig.tools.editCameraImage.description,
-      parameters: {
-        type: Type.OBJECT,
-        properties: {},
-      },
-    };
+    const functionDeclarations = Object.values(appConfig.tools).map(
+      (tool: any) => {
+        const declaration: FunctionDeclaration = {
+          name: tool.name,
+          description: tool.description,
+        };
 
-    const clearImage = {
-      name: appConfig.tools.clearImage.name,
-      description: appConfig.tools.clearImage.description,
-      parameters: {
-        type: Type.OBJECT,
-        properties: {},
-      },
-    };
+        if (tool.parameters) {
+          declaration.parameters = tool.parameters;
+        }
 
-    const renderAltair = {
-      name: appConfig.tools.renderAltair.name,
-      description: appConfig.tools.renderAltair.description,
-      parameters: {
-        type: Type.OBJECT,
-        properties: {
-          json_graph: {
-            type: Type.STRING,
-            description:
-              appConfig.tools.renderAltair.parameters.properties.json_graph
-                .description,
-          },
-        },
-        required: appConfig.tools.renderAltair.parameters.required,
-      },
-    };
+        return declaration;
+      }
+    );
 
     return {
       responseModalities: [Modality.AUDIO],
@@ -103,7 +83,7 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
       tools: [
         { googleSearch: {} },
         {
-          functionDeclarations: [editCameraImage, clearImage, renderAltair],
+          functionDeclarations,
         },
       ],
     };

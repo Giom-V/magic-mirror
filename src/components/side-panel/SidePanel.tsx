@@ -63,53 +63,59 @@ export default function SidePanel({
     };
   }
 
-  const editCameraImage = useCallback(async () => {
-    console.log("Using tool: edit_camera_image");
-    const stream = await webcam.start();
-    const video = document.createElement("video");
-    video.srcObject = stream;
-    video.autoplay = true;
-    video.play();
+  const editCameraImage = useCallback(
+    async (disguise_character: string) => {
+      console.log("Using tool: disguise_camera_image");
+      const stream = await webcam.start();
+      const video = document.createElement("video");
+      video.srcObject = stream;
+      video.autoplay = true;
+      video.play();
 
-    video.addEventListener("loadeddata", async () => {
-      const canvas = document.createElement("canvas");
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) {
-        return;
-      }
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      const dataUrl = canvas.toDataURL("image/jpeg");
-      const base64Data = dataUrl.split(",")[1];
+      video.addEventListener("loadeddata", async () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          return;
+        }
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const dataUrl = canvas.toDataURL("image/jpeg");
+        const base64Data = dataUrl.split(",")[1];
 
-      const ai = new GoogleGenAI({
-        apiKey: process.env.REACT_APP_GEMINI_API_KEY as string,
-      });
-      const imagePart = fileToGenerativePart(base64Data, "image/jpeg");
+        const ai = new GoogleGenAI({
+          apiKey: process.env.REACT_APP_GEMINI_API_KEY as string,
+        });
+        const imagePart = fileToGenerativePart(base64Data, "image/jpeg");
 
-      const response = await ai.models.generateContent({
-        model: config.imageEditModel,
-        contents: [imagePart, config.tools.editCameraImage.prompt],
-      });
+        const response = await ai.models.generateContent({
+          model: config.imageEditModel,
+          contents: [
+            imagePart,
+            `transform me into ${disguise_character}. Also feel free to slightly change the background for a more dreamy one.`,
+          ],
+        });
 
-      if (
-        response.candidates &&
-        response.candidates.length > 0 &&
-        response.candidates[0].content &&
-        response.candidates[0].content.parts
-      ) {
-        for (const part of response.candidates[0].content.parts) {
-          if (part.inlineData && part.inlineData.data) {
-            const base64ImageBytes: string = part.inlineData.data;
-            const imageUrl = `data:image/png;base64,${base64ImageBytes}`;
-            setEditedImage(imageUrl);
+        if (
+          response.candidates &&
+          response.candidates.length > 0 &&
+          response.candidates[0].content &&
+          response.candidates[0].content.parts
+        ) {
+          for (const part of response.candidates[0].content.parts) {
+            if (part.inlineData && part.inlineData.data) {
+              const base64ImageBytes: string = part.inlineData.data;
+              const imageUrl = `data:image/png;base64,${base64ImageBytes}`;
+              setEditedImage(imageUrl);
+            }
           }
         }
-      }
-      webcam.stop();
-    });
-  }, [webcam, setEditedImage]);
+        webcam.stop();
+      });
+    },
+    [webcam, setEditedImage]
+  );
 
   //scroll the log to the bottom when new logs come in
   useEffect(() => {
@@ -138,10 +144,14 @@ export default function SidePanel({
       }
 
       const editCall = toolCall.functionCalls.find(
-        (fc) => fc.name === config.tools.editCameraImage.name
+        (fc) => fc.name === config.tools.disguise_camera_image.name
       );
       if (editCall) {
-        editCameraImage();
+        if (editCall.args && editCall.args.disguise_character) {
+          editCameraImage(editCall.args.disguise_character as string);
+        } else {
+          console.error("disguise_character argument not found in tool call");
+        }
       }
 
       const clearCall = toolCall.functionCalls.find(
@@ -160,9 +170,6 @@ export default function SidePanel({
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "i") {
-        editCameraImage();
-      }
       if (event.key === "c") {
         console.log("Using tool: clear_image_display");
         setEditedImage(null);
@@ -266,12 +273,6 @@ export default function SidePanel({
             onClick={handleSubmit}
           >
             send
-          </button>
-          <button
-            className="send-button material-symbols-outlined filled"
-            onClick={editCameraImage}
-          >
-            mood
           </button>
         </div>
       </div>
