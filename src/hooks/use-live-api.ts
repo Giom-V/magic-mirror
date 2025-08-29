@@ -10,7 +10,7 @@
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the a-specific language governing permissions and
+ * See the License for the specific language governing permissions and
  * limitations under the License.
  */
 
@@ -22,12 +22,20 @@ import { AudioStreamer } from "../lib/audio-streamer";
 import { audioContext } from "../lib/utils";
 import VolMeterWorket from "../lib/worklets/vol-meter";
 import {
-  LiveConnectConfig,
   FunctionDeclaration,
-  Type,
-  Modality,
-  MediaResolution,
+  FunctionDeclarationsTool,
+  HarmBlockThreshold,
+  HarmCategory,
+  Part,
+  Tool as GoogleTool,
 } from "@google/generative-ai";
+import { Content, GenerateContentRequest } from "@google/generative-ai/server";
+
+const {
+  VITE_API_PROXY_URL,
+  VITE_GEMINI_API_KEY,
+  VITE_GEMINI_MODEL_NAME: GEMINI_MODEL_NAME,
+} = import.meta.env;
 
 export type UseLiveAPIResults = {
   client: GenAILiveClient;
@@ -39,22 +47,37 @@ export type UseLiveAPIResults = {
   connect: () => Promise<void>;
   disconnect: () => Promise<void>;
   volume: number;
+  isMuted: boolean;
+  isListening: boolean;
+  isThinking: boolean;
+  isSpeaking: boolean;
+  toggleMute: () => void;
+  start: () => void;
+  stop: () => void;
+  send: (message: string) => void;
+  generateContent: (parts: Part[]) => Promise<string>;
+  editImage: (character: string) => Promise<void>;
+  clearImage: () => void;
 };
 
-export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
+type LiveConnectConfig = Omit<StartChatParams, "history"> & {
+  responseMimeType: "text/plain" | "audio/mp3";
+};
+
+export function useLiveAPI(options: LiveCientOptions): UseLiveAIResults {
   const client = useMemo(() => new GenAILiveClient(options), [options]);
   const audioStreamerRef = useRef<AudioStreamer | null>(null);
 
   const [model, setModel] = useState<string>(appConfig.liveModel);
   const [config, setConfig] = useState<LiveConnectConfig>(() => {
-    const editCameraImage = {
+    const editCameraImage: FunctionDeclaration = {
       name: appConfig.tools.editCameraImage.name,
       description: appConfig.tools.editCameraImage.description,
       parameters: {
-        type: Type.OBJECT,
+        type: "OBJECT",
         properties: {
           character: {
-            type: Type.STRING,
+            type: "STRING",
             description:
               "The fairy tale or fantasy character to transform the person into. For example: 'ogre', 'elf', 'witch', 'king', etc.",
           },
@@ -63,25 +86,26 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
       },
     };
 
-    const clearImage = {
+    const clearImage: FunctionDeclaration = {
       name: appConfig.tools.clearImage.name,
       description: appConfig.tools.clearImage.description,
       parameters: {
-        type: Type.OBJECT,
+        type: "OBJECT",
         properties: {},
+        required: [],
       },
     };
 
-    const renderAltair = {
+    const renderAltair: FunctionDeclaration = {
       name: appConfig.tools.renderAltair.name,
       description: appConfig.tools.renderAltair.description,
       parameters: {
-        type: Type.OBJECT,
+        type: "OBJECT",
         properties: {
           json_graph: {
-            type: Type.STRING,
+            type: "STRING",
             description:
-              appConfig.tools.renderAltaf.parameters.properties.json_graph
+              appConfig.tools.renderAltair.parameters.properties.json_graph
                 .description,
           },
         },
@@ -90,25 +114,36 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
     };
 
     return {
-      responseModalities: [Modality.AUDIO],
-      mediaResolution: MediaResolution.MEDIA_RESOLUTION_MEDIUM,
-      contextWindowCompression: {
-        triggerTokens: "25600",
-        slidingWindow: { targetTokens: "12800" },
+      responseMimeType: "audio/mp3",
+      sampleRateHertz: 16000,
+      safetySettings: [
+        {
+          category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+          threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+        },
+        {
+          category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+          threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+        },
+        {
+          category: HarmCategory.HARM_CATEGORY_HARASSMENT,
+          threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+        },
+        {
+          category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+          threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+        },
+      ],
+      generationConfig: {
+        temperature: 0.9,
+        topP: 0.95,
+        topK: 64,
+        maxOutputTokens: 8192,
       },
       systemInstruction: {
         parts: [{ text: appConfig.systemInstruction }],
       },
-      speechConfig: {
-        languageCode: "fr-FR",
-        voiceConfig: {
-          prebuiltVoiceConfig: {
-            voiceName: "Aoede",
-          },
-        },
-      },
       tools: [
-        { googleSearch: {} },
         {
           functionDeclarations: [editCameraImage, clearImage, renderAltair],
         },
