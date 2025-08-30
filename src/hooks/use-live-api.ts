@@ -68,7 +68,6 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
     return {
       responseModalities: [Modality.AUDIO],
       mediaResolution: MediaResolution.MEDIA_RESOLUTION_MEDIUM,
-      proactivity: { proactiveAudio: true },
       realtimeInputConfig: {
         automaticActivityDetection: {
           disabled: false,

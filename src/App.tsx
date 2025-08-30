@@ -35,7 +35,6 @@ if (typeof API_KEY !== "string") {
 
 const apiOptions: LiveClientOptions = {
   apiKey: API_KEY,
-  httpOptions: { apiVersion: "v1alpha" },
 };
 
 function App() {
