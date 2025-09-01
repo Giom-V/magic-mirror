@@ -9,7 +9,8 @@ import "./settings-dialog.scss";
 import { useLiveAPIContext } from "../../contexts/LiveAPIContext";
 import VoiceSelector from "./VoiceSelector";
 import ResponseModalitySelector from "./ResponseModalitySelector";
-import { FunctionDeclaration, LiveConnectConfig, Tool } from "@google/genai";
+import { FunctionDeclaration, Tool } from "@google/genai";
+import { AppConfig } from "../../types";
 
 type FunctionDeclarationsTool = Tool & {
   functionDeclarations: FunctionDeclaration[];
@@ -57,7 +58,7 @@ export default function SettingsDialog() {
 
   const updateConfig: FormEventHandler<HTMLTextAreaElement> = useCallback(
     (event: ChangeEvent<HTMLTextAreaElement>) => {
-      const newConfig: LiveConnectConfig = {
+      const newConfig: AppConfig = {
         ...config,
         systemInstruction: event.target.value,
       };
@@ -68,7 +69,7 @@ export default function SettingsDialog() {
 
   const updateFunctionDescription = useCallback(
     (editedFdName: string, newDescription: string) => {
-      const newConfig: LiveConnectConfig = {
+      const newConfig: AppConfig = {
         ...config,
         tools:
           config.tools?.map((tool) => {
@@ -112,6 +113,21 @@ export default function SettingsDialog() {
           <div className="mode-selectors">
             <ResponseModalitySelector />
             <VoiceSelector />
+            <div className="setting">
+              <span className="setting-label">Camera</span>
+              <select
+                onChange={(e) =>
+                  setConfig({
+                    ...config,
+                    camera: { orientation: e.target.value },
+                  })
+                }
+                value={config.camera?.orientation || "horizontal"}
+              >
+                <option value="horizontal">Horizontal</option>
+                <option value="vertical">Vertical</option>
+              </select>
+            </div>
           </div>
 
           <h3>System Instructions</h3>

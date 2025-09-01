@@ -17,9 +17,16 @@
 import {
   GoogleGenAIOptions,
   LiveClientToolResponse,
+  LiveConnectConfig,
   LiveServerMessage,
   Part,
 } from "@google/genai";
+
+export type AppConfig = LiveConnectConfig & {
+  camera?: {
+    orientation: string;
+  };
+};
 
 /**
  * the options to initiate the client, ensure apiKey is required

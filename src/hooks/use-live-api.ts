@@ -22,7 +22,6 @@ import { AudioStreamer } from "../lib/audio-streamer";
 import { audioContext } from "../lib/utils";
 import VolMeterWorket from "../lib/worklets/vol-meter";
 import {
-  LiveConnectConfig,
   FunctionDeclaration,
   Type,
   Modality,
@@ -30,11 +29,12 @@ import {
   StartSensitivity,
   EndSensitivity,
 } from "@google/genai";
+import { AppConfig } from "../types";
 
 export type UseLiveAPIResults = {
   client: GenAILiveClient;
-  setConfig: (config: LiveConnectConfig) => void;
-  config: LiveConnectConfig;
+  setConfig: (config: AppConfig) => void;
+  config: AppConfig;
   model: string;
   setModel: (model: string) => void;
   connected: boolean;
@@ -48,7 +48,7 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
   const audioStreamerRef = useRef<AudioStreamer | null>(null);
 
   const [model, setModel] = useState<string>(appConfig.liveModel);
-  const [config, setConfig] = useState<LiveConnectConfig>(() => {
+  const [config, setConfig] = useState<AppConfig>(() => {
     const functionDeclarations = Object.values(appConfig.tools).map(
       (tool: any) => {
         const declaration = {
