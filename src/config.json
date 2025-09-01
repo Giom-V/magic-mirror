@@ -37,7 +37,7 @@
     },
     "play_music": {
       "name": "play_music",
-      "description": "Plays music based on a user's prompt. Can be used to start new music or change the currently playing track.",
+      "description": "Use this tool to play or listen to music based on a user's description. Can be used to start new music or change the currently playing track.",
       "parameters": {
         "type": "OBJECT",
         "properties": {
@@ -52,6 +52,10 @@
         },
         "required": ["prompt"]
       }
+    },
+    "stop_music": {
+      "name": "stop_music",
+      "description": "Stops the currently playing music."
     }
   }
 }

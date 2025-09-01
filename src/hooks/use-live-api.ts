@@ -31,7 +31,7 @@ import {
   EndSensitivity,
   LiveServerToolCall,
 } from "@google/genai";
-import { playMusic } from "../tools/music-tool";
+import { playMusic, stopMusic } from "../tools/music-tool";
 
 export type UseLiveAPIResults = {
   client: GenAILiveClient;
@@ -150,7 +150,10 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
                 playMusic(fnCall.args.prompt, fnCall.args.modelName as string | undefined);
               }
               break;
-            // Other tools could be handled here
+            case "stop_music":
+              console.log("Handling stop_music tool call");
+              stopMusic();
+              break;
           }
         }
       }

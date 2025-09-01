@@ -8,18 +8,10 @@ import {
 
 const API_KEY = process.env.REACT_APP_GEMINI_API_KEY as string;
 
-const genAI = new GoogleGenAI({
-  apiKey: API_KEY,
-  apiVersion: 'v1alpha',
-});
-
-// --- State Management ---
-let session: LiveMusicSession | null = null;
+// --- Web Audio API implementation ---
 let audioContext: AudioContext | null = null;
 let nextStartTime = 0;
-let isPlaying = false;
 
-// --- Audio Playback Logic ---
 function getAudioContext(): AudioContext {
     if (!audioContext || audioContext.state === 'closed') {
         audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -29,7 +21,9 @@ function getAudioContext(): AudioContext {
 
 async function handleAudioChunk(chunkData: string) {
     const ctx = getAudioContext();
-    // Base64 decode --> ArrayBuffer
+    if (ctx.state === 'suspended') {
+        await ctx.resume();
+    }
     const binaryString = atob(chunkData);
     const len = binaryString.length;
     const bytes = new Uint8Array(len);
@@ -37,72 +31,118 @@ async function handleAudioChunk(chunkData: string) {
         bytes[i] = binaryString.charCodeAt(i);
     }
     const chunk = bytes.buffer;
-
-    // Lyria sends 16-bit PCM, 2 channels, 44100Hz
-    const frameCount = chunk.byteLength / 4; // 2 bytes per sample, 2 channels
+    const frameCount = chunk.byteLength / 4;
     const audioBuffer = ctx.createBuffer(2, frameCount, 44100);
-
     const pcmData = new Int16Array(chunk);
     const leftChannel = audioBuffer.getChannelData(0);
     const rightChannel = audioBuffer.getChannelData(1);
-
     for (let i = 0; i < frameCount; i++) {
         leftChannel[i] = pcmData[i * 2] / 32768.0;
         rightChannel[i] = pcmData[i * 2 + 1] / 32768.0;
     }
-
     const source = ctx.createBufferSource();
     source.buffer = audioBuffer;
     source.connect(ctx.destination);
-
     const currentTime = ctx.currentTime;
     if (currentTime > nextStartTime) {
         nextStartTime = currentTime;
     }
-
     source.start(nextStartTime);
     nextStartTime += audioBuffer.duration;
 }
 
-async function connectToLyria(): Promise<LiveMusicSession> {
-    if (session) {
-        return session;
+
+// --- Lyria Client Singleton ---
+class LyriaMusicClient {
+    private static instance: LyriaMusicClient;
+    private client: GoogleGenAI;
+    private session: LiveMusicSession | null = null;
+    private isPlaying: boolean = false;
+
+    private constructor() {
+        this.client = new GoogleGenAI({
+            apiKey: API_KEY,
+            apiVersion: 'v1alpha',
+        });
     }
 
-    console.log("Connecting to Lyria...");
+    public static getInstance(): LyriaMusicClient {
+        if (!LyriaMusicClient.instance) {
+            LyriaMusicClient.instance = new LyriaMusicClient();
+        }
+        return LyriaMusicClient.instance;
+    }
 
-    const newSession = await genAI.live.music.connect({
-        model: "models/lyria-realtime-exp",
-        callbacks: {
-            onmessage: (message: LiveMusicServerMessage) => {
-                if (message.setupComplete) {
-                    console.log("Lyria connection ready.");
-                }
-                if (message.serverContent?.audioChunks) {
-                    for (const chunk of message.serverContent.audioChunks) {
-                        if (chunk.data) {
-                            handleAudioChunk(chunk.data);
+    private async connect(): Promise<LiveMusicSession> {
+        if (this.session) {
+            return this.session;
+        }
+
+        console.log("Connecting to Lyria...");
+        const newSession = await this.client.live.music.connect({
+            model: "models/lyria-realtime-exp",
+            callbacks: {
+                onmessage: (message: LiveMusicServerMessage) => {
+                    if (message.setupComplete) {
+                        console.log("Lyria connection ready.");
+                    }
+                    if (message.serverContent?.audioChunks) {
+                        for (const chunk of message.serverContent.audioChunks) {
+                            if (chunk.data) {
+                                handleAudioChunk(chunk.data);
+                            }
                         }
                     }
-                }
+                },
+                onerror: (error: ErrorEvent) => {
+                    console.error("Lyria session error:", error);
+                    this.session = null;
+                    this.isPlaying = false;
+                },
+                onclose: () => {
+                    console.log("Lyria session closed.");
+                    this.session = null;
+                    this.isPlaying = false;
+                },
             },
-            onerror: (error: ErrorEvent) => {
-                console.error("Lyria session error:", error);
-                isPlaying = false;
-                session = null;
-            },
-            onclose: () => {
-                console.log("Lyria session closed.");
-                isPlaying = false;
-                session = null;
-            },
-        },
-    });
+        });
+        this.session = newSession;
+        return newSession;
+    }
 
-    session = newSession;
-    return session;
+    public async play(prompts: WeightedPrompt[]): Promise<void> {
+        const musicSession = await this.connect();
+        await musicSession.setWeightedPrompts({ weightedPrompts: prompts });
+
+        if (!this.isPlaying) {
+            getAudioContext().resume();
+            musicSession.play();
+            this.isPlaying = true;
+        }
+    }
+
+    public async stop(): Promise<void> {
+        if (this.session) {
+            this.session.stop();
+            // The onclose callback will handle state reset.
+        }
+        this.isPlaying = false;
+        nextStartTime = 0;
+    }
+
+    public async disconnect(): Promise<void> {
+        if (this.session) {
+            this.session.close();
+        }
+    }
 }
 
+
+// --- Tool Implementation ---
+const genAI = new GoogleGenAI({
+    apiKey: API_KEY,
+    apiVersion: 'v1alpha',
+});
 
 const musicPromptsSchema = {
     type: Type.ARRAY,
@@ -122,13 +162,10 @@ const musicPromptsSchema = {
     },
 };
 
-// --- Tool Implementation ---
 export async function playMusic(prompt: string, modelName: string = "gemini-2.5-flash-lite") {
   console.log(`Music tool called with prompt: "${prompt}" using model ${modelName}`);
 
   try {
-    const musicSession = await connectToLyria();
-
     console.log("Generating musical prompts with Gemini...");
     const response = await genAI.models.generateContent({
         model: modelName,
@@ -162,17 +199,16 @@ User request: "${prompt}"`
     }
 
     console.log("Generated prompts:", weightedPrompts);
-
-    await musicSession.setWeightedPrompts({ weightedPrompts });
-
-    if (!isPlaying) {
-        getAudioContext().resume();
-        musicSession.play();
-        isPlaying = true;
-    }
+    const lyriaClient = LyriaMusicClient.getInstance();
+    await lyriaClient.play(weightedPrompts);
 
   } catch (e) {
     console.error("Error in playMusic tool:", e);
-    isPlaying = false;
   }
+}
+
+export async function stopMusic() {
+    console.log("Stopping music...");
+    const lyriaClient = LyriaMusicClient.getInstance();
+    await lyriaClient.stop();
 }
