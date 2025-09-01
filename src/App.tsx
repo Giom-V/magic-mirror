@@ -55,7 +55,7 @@ function App() {
   const { connected, connect, disconnect, config } = useLiveAPIContext();
 
   useEffect(() => {
-    if (config.autoStart.enabled && !connected && !didAutoConnect) {
+    if (config.autoStart && config.autoStart.enabled && !connected && !didAutoConnect) {
       setDidAutoConnect(true);
       connect();
       if (config.autoStart.withCamera) {

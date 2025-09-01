@@ -28,6 +28,10 @@ export type AppConfig = LiveConnectConfig & {
   camera?: {
     orientation: string;
   };
+  autoStart?: {
+    enabled: boolean;
+    withCamera: boolean;
+  };
 };
 
 /**
