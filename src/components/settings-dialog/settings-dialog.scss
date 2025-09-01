@@ -65,6 +65,8 @@
   .dialog-container {
     box-sizing: border-box;
     padding: 32px;
+    max-height: 80vh;
+    overflow-y: auto;
     overflow-x: hidden;
 
     &.disabled {
