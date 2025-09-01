@@ -121,19 +121,6 @@ export default function SettingsDialog() {
             onChange={updateConfig}
             value={systemInstruction}
           />
-          <h3>Music Settings</h3>
-          <div className="music-settings">
-            <label htmlFor="music-volume">Music Volume</label>
-            <input
-              type="range"
-              id="music-volume"
-              min="0"
-              max="1"
-              step="0.05"
-              defaultValue="0.5"
-              onChange={(e) => setMusicVolume(parseFloat(e.target.value))}
-            />
-          </div>
           <h4>Function declarations</h4>
           <div className="function-declarations">
             <div className="fd-rows">
@@ -160,6 +147,21 @@ export default function SettingsDialog() {
               ))}
             </div>
           </div>
+        </div>
+        <div className="music-settings-container">
+            <h3>Music Settings</h3>
+            <div className="music-settings">
+                <label htmlFor="music-volume">Music Volume</label>
+                <input
+                  type="range"
+                  id="music-volume"
+                  min="0"
+                  max="1"
+                  step="0.05"
+                  defaultValue="0.5"
+                  onChange={(e) => setMusicVolume(parseFloat(e.target.value))}
+                />
+            </div>
         </div>
       </dialog>
     </div>
