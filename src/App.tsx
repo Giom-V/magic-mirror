@@ -55,13 +55,13 @@ function App() {
   const { connected, connect, disconnect } = useLiveAPIContext();
 
   useEffect(() => {
-    if (config.autoStart.enabled) {
+    if (config.autoStart.enabled && !connected) {
       connect();
       if (config.autoStart.withCamera) {
         webcam.start().then(setVideoStream);
       }
     }
-  }, [connect, webcam, setVideoStream]);
+  }, [connect, webcam, setVideoStream, connected]);
 
   useEffect(() => {
     let timeoutId: NodeJS.Timeout;

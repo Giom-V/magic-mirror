@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { UseMediaStreamResult } from "./use-media-stream-mux";
 
 export function useWebcam(): UseMediaStreamResult {
@@ -40,30 +40,31 @@ export function useWebcam(): UseMediaStreamResult {
     }
   }, [stream]);
 
-  const start = async () => {
+  const start = useCallback(async () => {
     const mediaStream = await navigator.mediaDevices.getUserMedia({
       video: true,
     });
     setStream(mediaStream);
     setIsStreaming(true);
     return mediaStream;
-  };
+  }, []);
 
-  const stop = () => {
+  const stop = useCallback(() => {
     if (stream) {
       stream.getTracks().forEach((track) => track.stop());
       setStream(null);
       setIsStreaming(false);
     }
-  };
+  }, [stream]);
 
-  const result: UseMediaStreamResult = {
-    type: "webcam",
-    start,
-    stop,
-    isStreaming,
-    stream,
-  };
-
-  return result;
+  return useMemo(
+    () => ({
+      type: "webcam",
+      start,
+      stop,
+      isStreaming,
+      stream,
+    }),
+    [start, stop, isStreaming, stream]
+  );
 }
