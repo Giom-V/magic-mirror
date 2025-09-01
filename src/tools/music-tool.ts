@@ -19,51 +19,23 @@ function getAudioContext(): AudioContext {
     return audioContext;
 }
 
-async function handleAudioChunk(chunkData: string) {
-    const ctx = getAudioContext();
-    if (ctx.state === 'suspended') {
-        await ctx.resume();
-    }
-    const binaryString = atob(chunkData);
-    const len = binaryString.length;
-    const bytes = new Uint8Array(len);
-    for (let i = 0; i < len; i++) {
-        bytes[i] = binaryString.charCodeAt(i);
-    }
-    const chunk = bytes.buffer;
-    const frameCount = chunk.byteLength / 4;
-    const audioBuffer = ctx.createBuffer(2, frameCount, 44100);
-    const pcmData = new Int16Array(chunk);
-    const leftChannel = audioBuffer.getChannelData(0);
-    const rightChannel = audioBuffer.getChannelData(1);
-    for (let i = 0; i < frameCount; i++) {
-        leftChannel[i] = pcmData[i * 2] / 32768.0;
-        rightChannel[i] = pcmData[i * 2 + 1] / 32768.0;
-    }
-    const source = ctx.createBufferSource();
-    source.buffer = audioBuffer;
-    source.connect(ctx.destination);
-    const currentTime = ctx.currentTime;
-    if (currentTime > nextStartTime) {
-        nextStartTime = currentTime;
-    }
-    source.start(nextStartTime);
-    nextStartTime += audioBuffer.duration;
-}
-
-
 // --- Lyria Client Singleton ---
 class LyriaMusicClient {
     private static instance: LyriaMusicClient;
     private client: GoogleGenAI;
     private session: LiveMusicSession | null = null;
     private isPlaying: boolean = false;
+    private gainNode: GainNode;
 
     private constructor() {
         this.client = new GoogleGenAI({
             apiKey: API_KEY,
             apiVersion: 'v1alpha',
         });
+        const ctx = getAudioContext();
+        this.gainNode = ctx.createGain();
+        this.gainNode.gain.value = 0.5; // Default volume at 50%
+        this.gainNode.connect(ctx.destination);
     }
 
     public static getInstance(): LyriaMusicClient {
@@ -71,6 +43,38 @@ class LyriaMusicClient {
             LyriaMusicClient.instance = new LyriaMusicClient();
         }
         return LyriaMusicClient.instance;
+    }
+
+    private async handleAudioChunk(chunkData: string) {
+        const ctx = getAudioContext();
+        if (ctx.state === 'suspended') {
+            await ctx.resume();
+        }
+        const binaryString = atob(chunkData);
+        const len = binaryString.length;
+        const bytes = new Uint8Array(len);
+        for (let i = 0; i < len; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+        }
+        const chunk = bytes.buffer;
+        const frameCount = chunk.byteLength / 4;
+        const audioBuffer = ctx.createBuffer(2, frameCount, 44100);
+        const pcmData = new Int16Array(chunk);
+        const leftChannel = audioBuffer.getChannelData(0);
+        const rightChannel = audioBuffer.getChannelData(1);
+        for (let i = 0; i < frameCount; i++) {
+            leftChannel[i] = pcmData[i * 2] / 32768.0;
+            rightChannel[i] = pcmData[i * 2 + 1] / 32768.0;
+        }
+        const source = ctx.createBufferSource();
+        source.buffer = audioBuffer;
+        source.connect(this.gainNode); // Connect to gain node instead of destination
+        const currentTime = ctx.currentTime;
+        if (currentTime > nextStartTime) {
+            nextStartTime = currentTime;
+        }
+        source.start(nextStartTime);
+        nextStartTime += audioBuffer.duration;
     }
 
     private async connect(): Promise<LiveMusicSession> {
@@ -89,7 +93,7 @@ class LyriaMusicClient {
                     if (message.serverContent?.audioChunks) {
                         for (const chunk of message.serverContent.audioChunks) {
                             if (chunk.data) {
-                                handleAudioChunk(chunk.data);
+                                this.handleAudioChunk(chunk.data);
                             }
                         }
                     }
@@ -124,7 +128,6 @@ class LyriaMusicClient {
     public async stop(): Promise<void> {
         if (this.session) {
             this.session.stop();
-            // The onclose callback will handle state reset.
         }
         this.isPlaying = false;
         nextStartTime = 0;
@@ -134,6 +137,18 @@ class LyriaMusicClient {
         if (this.session) {
             this.session.close();
         }
+    }
+
+    public setVolume(level: number) {
+        if (level < 0 || level > 1) {
+            console.error("Volume level must be between 0 and 1.");
+            return;
+        }
+        this.gainNode.gain.value = level;
+    }
+
+    public getIsPlaying(): boolean {
+        return this.isPlaying;
     }
 }
 
@@ -211,4 +226,18 @@ export async function stopMusic() {
     console.log("Stopping music...");
     const lyriaClient = LyriaMusicClient.getInstance();
     await lyriaClient.stop();
+}
+
+export function setMusicVolume(level: number) {
+    const lyriaClient = LyriaMusicClient.getInstance();
+    lyriaClient.setVolume(level);
+}
+
+export function toggleMusic(prompt: string = "Piano") {
+    const lyriaClient = LyriaMusicClient.getInstance();
+    if (lyriaClient.getIsPlaying()) {
+        stopMusic();
+    } else {
+        playMusic(prompt);
+    }
 }

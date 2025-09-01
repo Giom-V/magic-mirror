@@ -26,6 +26,7 @@ import cn from "classnames";
 import { LiveClientOptions } from "./types";
 import { GoogleGenAI, Part } from "@google/genai";
 import { disguiseCameraImage } from "./tools/disguiseCameraImage";
+import { toggleMusic } from "./tools/music-tool";
 import config from "./config.json";
 
 const API_KEY = process.env.REACT_APP_GEMINI_API_KEY as string;
@@ -98,6 +99,8 @@ function App() {
         setSidePanelOpen(!sidePanelOpen);
       } else if (event.key === "i") {
         disguiseCameraImage("a fantasy character", webcam, setEditedImage);
+      } else if (event.key === "m") {
+        toggleMusic();
       } else if (event.key === "Delete") {
         setEditedImage(null);
       }
