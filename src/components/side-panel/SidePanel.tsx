@@ -25,7 +25,11 @@ import { useLoggerStore } from "../../lib/store-logger";
 import Logger, { LoggerFilterType } from "../logger/Logger";
 import "./side-panel.scss";
 import { useWebcam } from "../../hooks/use-webcam";
-import { LiveServerToolCall } from "@google/genai";
+import {
+  FunctionResponseScheduling,
+  LiveClientToolResponse,
+  LiveServerToolCall,
+} from "@google/genai";
 import { disguiseCameraImage } from "../../tools/disguiseCameraImage";
 
 const filterOptions = [
@@ -79,31 +83,40 @@ export default function SidePanel({
   }, [client, log]);
 
   useEffect(() => {
-    const onToolCall = (toolCall: LiveServerToolCall) => {
+    const onToolCall = async (toolCall: LiveServerToolCall) => {
       if (!toolCall.functionCalls) {
         return;
       }
 
-      const editCall = toolCall.functionCalls.find(
-        (fc) => fc.name === config.tools.disguise_camera_image.name
-      );
-      if (editCall) {
-        if (editCall.args && editCall.args.disguise_character) {
-          disguiseCameraImage(
-            editCall.args.disguise_character as string,
-            webcam,
-            setEditedImage
-          );
-        } else {
-          console.error("disguise_character argument not found in tool call");
-        }
-      }
+      for (const fc of toolCall.functionCalls) {
+        const response: LiveClientToolResponse = {
+          functionResponses: [
+            {
+              id: fc.id,
+              name: fc.name,
+              response: {
+                result: "ok",
+                scheduling: FunctionResponseScheduling.INTERRUPT,
+              },
+            },
+          ],
+        };
 
-      const clearCall = toolCall.functionCalls.find(
-        (fc) => fc.name === config.tools.clearImage.name
-      );
-      if (clearCall) {
-        setEditedImage(null);
+        if (fc.name === config.tools.disguise_camera_image.name) {
+          if (fc.args && fc.args.disguise_character) {
+            await disguiseCameraImage(
+              fc.args.disguise_character as string,
+              webcam,
+              setEditedImage,
+            );
+            client.sendToolResponse(response);
+          } else {
+            console.error("disguise_character argument not found in tool call");
+          }
+        } else if (fc.name === config.tools.clearImage.name) {
+          setEditedImage(null);
+          client.sendToolResponse(response);
+        }
       }
     };
 
