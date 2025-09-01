@@ -10,6 +10,9 @@ let audioQueue: AudioBuffer[] = [];
 let isPlaying = false;
 
 function schedulePlayback() {
+  if (audioContext.state === 'suspended') {
+    return;
+  }
   if (audioQueue.length === 0 || !isPlaying) {
     return;
   }
@@ -55,6 +58,9 @@ class LyriaMusicClient {
   private session: MusicSession | null = null;
   private static instance: LyriaMusicClient;
 
+  private connectionPromise: Promise<void> | null = null;
+  private isReady: boolean = false;
+
   constructor() {
     this.client = new GoogleGenAI({
       apiKey: API_KEY,
@@ -69,62 +75,85 @@ class LyriaMusicClient {
     return LyriaMusicClient.instance;
   }
 
-  public async connect(): Promise<void> {
-    if (this.session) {
-      console.log("Lyria session already exists.");
-      return;
+  public connect(): Promise<void> {
+    if (this.isReady && this.connectionPromise) {
+      return this.connectionPromise;
     }
 
-    console.log("Connecting to Lyria...");
-    this.session = await this.client.live.music.connect({
-      model: "models/lyria-realtime-exp",
-      callbacks: {
-        onmessage: (message) => {
-          if (message.serverContent?.audioChunks) {
-            for (const chunk of message.serverContent.audioChunks) {
-              const audioBuffer = base64ToArrayBuffer(chunk.data);
-              handleAudioChunk(audioBuffer);
-            }
-          }
-        },
-        onerror: (error) => console.error("Lyria session error:", error),
-        onclose: () => console.log("Lyria stream closed."),
-      },
-    });
+    if (!this.connectionPromise) {
+      console.log("Connecting to Lyria...");
+      this.connectionPromise = new Promise<void>((resolve, reject) => {
+        this.client.live.music.connect({
+          model: "models/lyria-realtime-exp",
+          callbacks: {
+            onmessage: (message) => {
+              if (message.setupComplete) {
+                console.log("Lyria setup complete.");
+                this.isReady = true;
+                resolve();
+              }
+              if (message.serverContent?.audioChunks) {
+                for (const chunk of message.serverContent.audioChunks) {
+                  const audioBuffer = base64ToArrayBuffer(chunk.data);
+                  handleAudioChunk(audioBuffer);
+                }
+              }
+              if(message.filteredPrompt) {
+                console.warn(`Lyria prompt filtered: ${message.filteredPrompt.text} - Reason: ${message.filteredPrompt.filteredReason}`);
+              }
+            },
+            onerror: (error) => {
+              console.error("Lyria session error:", error)
+              this.isReady = false;
+              this.connectionPromise = null;
+              reject(error);
+            },
+            onclose: () => {
+              console.log("Lyria stream closed.");
+              this.isReady = false;
+              this.session = null;
+              this.connectionPromise = null;
+            },
+          },
+        }).then(session => {
+          this.session = session;
+          // Set the initial config right after getting the session
+          this.session.setMusicGenerationConfig({
+              musicGenerationConfig: {
+                  audioFormat: "pcm16",
+                  sampleRateHz: 44100,
+              },
+          });
+        }).catch(err => {
+            console.error("Lyria connection failed:", err);
+            this.isReady = false;
+            this.connectionPromise = null;
+            reject(err);
+        });
+      });
+    }
 
-    await this.session.setMusicGenerationConfig({
-        musicGenerationConfig: {
-            audioFormat: "pcm16",
-            sampleRateHz: 44100,
-        },
-    });
-
-    console.log("Lyria connected.");
+    return this.connectionPromise;
   }
 
   public async disconnect(): Promise<void> {
     if (this.session) {
       this.session.close();
-      this.session = null;
-      isPlaying = false;
-      audioQueue = [];
-      console.log("Lyria disconnected.");
     }
+    // Reset state is handled by onclose callback
   }
 
   public async setPrompts(prompts: WeightedPrompt[]): Promise<void> {
-    if (!this.session) {
-      console.error("Not connected to Lyria.");
-      return;
+    if (!this.isReady || !this.session) {
+      throw new Error("Lyria client is not ready. Call connect() and wait for it to complete.");
     }
     await this.session.setWeightedPrompts({ weightedPrompts: prompts });
     console.log("Lyria prompts updated:", prompts);
   }
 
   public async play(): Promise<void> {
-    if (!this.session) {
-      console.error("Not connected to Lyria.");
-      return;
+    if (!this.isReady || !this.session) {
+      throw new Error("Lyria client is not ready. Call connect() and wait for it to complete.");
     }
     if (audioContext.state === 'suspended') {
       await audioContext.resume();
@@ -136,8 +165,8 @@ class LyriaMusicClient {
   }
 
   public async pause(): Promise<void> {
-    if (!this.session) {
-      console.error("Not connected to Lyria.");
+    if (!this.isReady || !this.session) {
+      console.error("Lyria client is not ready.");
       return;
     }
     await this.session.pause();
@@ -146,8 +175,8 @@ class LyriaMusicClient {
   }
 
   public async stop(): Promise<void> {
-    if (!this.session) {
-        console.error("Not connected to Lyria.");
+    if (!this.isReady || !this.session) {
+        console.error("Lyria client is not ready.");
         return;
     }
     await this.session.stop();
