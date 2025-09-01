@@ -52,7 +52,7 @@ function App() {
   const [didAutoConnect, setDidAutoConnect] = useState(false);
   const webcam = useWebcam();
 
-  const { connected, connect, disconnect } = useLiveAPIContext();
+  const { connected, connect, disconnect, config } = useLiveAPIContext();
 
   useEffect(() => {
     if (config.autoStart.enabled && !connected && !didAutoConnect) {
@@ -108,7 +108,12 @@ function App() {
       } else if (event.key === "d") {
         setSidePanelOpen(!sidePanelOpen);
       } else if (event.key === "i") {
-        disguiseCameraImage("a fantasy character", webcam, setEditedImage);
+        disguiseCameraImage(
+          "a fantasy character",
+          webcam,
+          setEditedImage,
+          config
+        );
       } else if (event.key === "Delete") {
         setEditedImage(null);
       } else if (event.key.toLowerCase() === "v") {

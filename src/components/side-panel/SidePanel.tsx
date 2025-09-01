@@ -46,7 +46,7 @@ export default function SidePanel({
   open: boolean;
   onToggle: () => void;
 }) {
-  const { connected, client } = useLiveAPIContext();
+  const { connected, client, config: liveConfig } = useLiveAPIContext();
   const loggerRef = useRef<HTMLDivElement>(null);
   const loggerLastHeightRef = useRef<number>(-1);
   const { log, logs } = useLoggerStore();
@@ -93,7 +93,8 @@ export default function SidePanel({
           disguiseCameraImage(
             editCall.args.disguise_character as string,
             webcam,
-            setEditedImage
+            setEditedImage,
+            liveConfig
           );
         } else {
           console.error("disguise_character argument not found in tool call");
