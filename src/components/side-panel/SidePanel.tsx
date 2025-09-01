@@ -26,7 +26,6 @@ import Logger, { LoggerFilterType } from "../logger/Logger";
 import "./side-panel.scss";
 import { useWebcam } from "../../hooks/use-webcam";
 import {
-  FunctionResponseScheduling,
   LiveClientToolResponse,
   LiveServerToolCall,
 } from "@google/genai";
@@ -96,7 +95,7 @@ export default function SidePanel({
               name: fc.name,
               response: {
                 result: "ok",
-                scheduling: FunctionResponseScheduling.INTERRUPT,
+                scheduling: "INTERRUPT",
               },
             },
           ],
