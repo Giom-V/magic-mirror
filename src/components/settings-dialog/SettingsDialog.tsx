@@ -11,6 +11,7 @@ import VoiceSelector from "./VoiceSelector";
 import ResponseModalitySelector from "./ResponseModalitySelector";
 import { FunctionDeclaration, Tool } from "@google/genai";
 import { AppConfig } from "../../types";
+import CameraOrientationSelector from "./CameraOrientationSelector";
 
 type FunctionDeclarationsTool = Tool & {
   functionDeclarations: FunctionDeclaration[];
@@ -113,21 +114,7 @@ export default function SettingsDialog() {
           <div className="mode-selectors">
             <ResponseModalitySelector />
             <VoiceSelector />
-            <div className="setting">
-              <span className="setting-label">Camera</span>
-              <select
-                onChange={(e) =>
-                  setConfig({
-                    ...config,
-                    camera: { orientation: e.target.value },
-                  })
-                }
-                value={config.camera?.orientation || "horizontal"}
-              >
-                <option value="horizontal">Horizontal</option>
-                <option value="vertical">Vertical</option>
-              </select>
-            </div>
+            <CameraOrientationSelector />
           </div>
 
           <h3>System Instructions</h3>
