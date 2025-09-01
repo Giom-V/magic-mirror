@@ -190,6 +190,7 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
 
   const disconnect = useCallback(async () => {
     client.disconnect();
+    stopMusic();
     setConnected(false);
   }, [setConnected, client]);
 
