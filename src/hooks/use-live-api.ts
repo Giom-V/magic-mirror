@@ -29,7 +29,9 @@ import {
   MediaResolution,
   StartSensitivity,
   EndSensitivity,
+  LiveServerToolCall,
 } from "@google/genai";
+import { playMusic } from "../tools/music-tool";
 
 export type UseLiveAPIResults = {
   client: GenAILiveClient;
@@ -138,12 +140,29 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
     const onAudio = (data: ArrayBuffer) =>
       audioStreamerRef.current?.addPCM16(new Uint8Array(data));
 
+    const onToolCall = (toolCall: LiveServerToolCall) => {
+      if (toolCall.functionCalls) {
+        for (const fnCall of toolCall.functionCalls) {
+          switch (fnCall.name) {
+            case "play_music":
+              console.log("Handling play_music tool call", fnCall.args);
+              if (fnCall.args && typeof fnCall.args.prompt === "string") {
+                playMusic(fnCall.args.prompt, fnCall.args.modelName as string | undefined);
+              }
+              break;
+            // Other tools could be handled here
+          }
+        }
+      }
+    };
+
     client
       .on("error", onError)
       .on("open", onOpen)
       .on("close", onClose)
       .on("interrupted", stopAudioStreamer)
-      .on("audio", onAudio);
+      .on("audio", onAudio)
+      .on("toolcall", onToolCall);
 
     return () => {
       client
@@ -152,6 +171,7 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
         .off("close", onClose)
         .off("interrupted", stopAudioStreamer)
         .off("audio", onAudio)
+        .off("toolcall", onToolCall)
         .disconnect();
     };
   }, [client]);

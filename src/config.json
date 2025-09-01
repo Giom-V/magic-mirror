@@ -34,6 +34,24 @@
         },
         "required": ["json_graph"]
       }
+    },
+    "play_music": {
+      "name": "play_music",
+      "description": "Plays music based on a user's prompt. Can be used to start new music or change the currently playing track.",
+      "parameters": {
+        "type": "OBJECT",
+        "properties": {
+          "prompt": {
+            "type": "STRING",
+            "description": "A description of the music to play. e.g. 'funky jazz with a saxophone solo', 'upbeat electronic music', 'sad piano melody'"
+          },
+          "modelName": {
+            "type": "STRING",
+            "description": "Optional. The specific Gemini model to use for generating the detailed music prompts. Defaults to 'gemini-2.5-flash-lite'."
+          }
+        },
+        "required": ["prompt"]
+      }
     }
   }
 }
