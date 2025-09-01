@@ -147,21 +147,24 @@ export default function SettingsDialog() {
               ))}
             </div>
           </div>
-        </div>
-        <div className="always-on-settings">
-          <CameraOrientationSelector />
           <div className="music-settings-container">
-            <label htmlFor="music-volume">Music Volume</label>
-            <input
-              type="range"
-              id="music-volume"
-              min="0"
-              max="1"
-              step="0.05"
-              defaultValue="0.5"
-              onChange={(e) => setMusicVolume(parseFloat(e.target.value))}
-            />
+            <h3>Music Settings</h3>
+            <div className="music-settings">
+              <label htmlFor="music-volume">Music Volume</label>
+              <input
+                type="range"
+                id="music-volume"
+                min="0"
+                max="1"
+                step="0.05"
+                defaultValue="0.5"
+                onChange={(e) => setMusicVolume(parseFloat(e.target.value))}
+              />
+            </div>
           </div>
+        </div>
+        <div className="camera-orientation-container">
+          <CameraOrientationSelector />
         </div>
       </dialog>
     </div>
