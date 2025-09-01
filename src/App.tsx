@@ -131,6 +131,14 @@ function App() {
           open={sidePanelOpen}
           onToggle={() => setSidePanelOpen(!sidePanelOpen)}
         />
+        {editedImage && (
+          <div className="contextual-prompt">
+            <p>
+              Image is edited, you can ask to edit it again. For example: "add a
+              hat"
+            </p>
+          </div>
+        )}
         <main>
           <div className="main-app-area">
             <img src="face.png" alt="face" className="face" />
