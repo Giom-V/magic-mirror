@@ -9,7 +9,8 @@ import "./settings-dialog.scss";
 import { useLiveAPIContext } from "../../contexts/LiveAPIContext";
 import VoiceSelector from "./VoiceSelector";
 import ResponseModalitySelector from "./ResponseModalitySelector";
-import { FunctionDeclaration, Tool } from "@google/genai";
+import { FunctionDeclaration, LiveConnectConfig, Tool } from "@google/genai";
+import { setMusicVolume } from "../../tools/music-tool";
 import { AppConfig } from "../../types";
 import CameraOrientationSelector from "./CameraOrientationSelector";
 
@@ -149,6 +150,21 @@ export default function SettingsDialog() {
               ))}
             </div>
           </div>
+        </div>
+        <div className="music-settings-container">
+            <h3>Music Settings</h3>
+            <div className="music-settings">
+                <label htmlFor="music-volume">Music Volume</label>
+                <input
+                  type="range"
+                  id="music-volume"
+                  min="0"
+                  max="1"
+                  step="0.05"
+                  defaultValue="0.5"
+                  onChange={(e) => setMusicVolume(parseFloat(e.target.value))}
+                />
+            </div>
         </div>
       </dialog>
     </div>

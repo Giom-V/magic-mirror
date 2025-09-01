@@ -41,6 +41,28 @@
         },
         "required": ["prompt"]
       }
+    },
+    "play_music": {
+      "name": "play_music",
+      "description": "Use this tool to play or listen to music based on a user's description. Can be used to start new music or change the currently playing track.",
+      "parameters": {
+        "type": "OBJECT",
+        "properties": {
+          "prompt": {
+            "type": "STRING",
+            "description": "A description of the music to play. e.g. 'funky jazz with a saxophone solo', 'upbeat electronic music', 'sad piano melody'"
+          },
+          "modelName": {
+            "type": "STRING",
+            "description": "Optional. The specific Gemini model to use for generating the detailed music prompts. Defaults to 'gemini-2.5-flash-lite'."
+          }
+        },
+        "required": ["prompt"]
+      }
+    },
+    "stop_music": {
+      "name": "stop_music",
+      "description": "Stops the currently playing music."
     }
   }
 }
