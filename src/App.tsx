@@ -54,6 +54,9 @@ function App() {
 
   const { connected, connect, disconnect } = useLiveAPIContext();
 
+  useEffect(() => {
+    connect();
+  }, [connect]);
 
   useEffect(() => {
     let timeoutId: NodeJS.Timeout;
