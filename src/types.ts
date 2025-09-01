@@ -23,8 +23,8 @@ import {
 } from "@google/genai";
 
 export type AppConfig = LiveConnectConfig & {
-  liveModel?: string;
-  imageEditModel?: string;
+  liveModel: string;
+  imageEditModel: string;
   camera?: {
     orientation: string;
   };
