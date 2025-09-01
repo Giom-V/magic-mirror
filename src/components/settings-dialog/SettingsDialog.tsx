@@ -102,20 +102,17 @@ export default function SettingsDialog() {
       >
         settings
       </button>
-      <dialog className="dialog" style={{ display: open ? "block" : "none" }}>
+      <dialog className="dialog" open={open}>
+        <button
+          className="close-button material-symbols-outlined"
+          onClick={() => setOpen(false)}
+        >
+          close
+        </button>
         <div className={`dialog-container ${connected ? "disabled" : ""}`}>
-          {connected && (
-            <div className="connected-indicator">
-              <p>
-                These settings can only be applied before connecting and will
-                override other settings.
-              </p>
-            </div>
-          )}
           <div className="mode-selectors">
             <ResponseModalitySelector />
             <VoiceSelector />
-            <CameraOrientationSelector />
           </div>
 
           <h3>System Instructions</h3>
@@ -151,20 +148,20 @@ export default function SettingsDialog() {
             </div>
           </div>
         </div>
-        <div className="music-settings-container">
-            <h3>Music Settings</h3>
-            <div className="music-settings">
-                <label htmlFor="music-volume">Music Volume</label>
-                <input
-                  type="range"
-                  id="music-volume"
-                  min="0"
-                  max="1"
-                  step="0.05"
-                  defaultValue="0.5"
-                  onChange={(e) => setMusicVolume(parseFloat(e.target.value))}
-                />
-            </div>
+        <div className="always-on-settings">
+          <CameraOrientationSelector />
+          <div className="music-settings-container">
+            <label htmlFor="music-volume">Music Volume</label>
+            <input
+              type="range"
+              id="music-volume"
+              min="0"
+              max="1"
+              step="0.05"
+              defaultValue="0.5"
+              onChange={(e) => setMusicVolume(parseFloat(e.target.value))}
+            />
+          </div>
         </div>
       </dialog>
     </div>
