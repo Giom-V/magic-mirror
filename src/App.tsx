@@ -19,7 +19,6 @@ import "./App.scss";
 import { useWebcam } from "./hooks/use-webcam";
 import { LiveAPIProvider, useLiveAPIContext } from "./contexts/LiveAPIContext";
 import SidePanel from "./components/side-panel/SidePanel";
-import { Altair } from "./components/altair/Altair";
 import ControlTray from "./components/control-tray/ControlTray";
 import MagicEffect from "./components/magic-effect/MagicEffect";
 import cn from "classnames";
@@ -145,7 +144,6 @@ function App() {
             />
             {/* APP goes here */}
             {editedImage && <MagicEffect imageUrl={editedImage} />}
-            <Altair />
             <video
               className={cn("stream", {
                 hidden: !videoRef.current || !videoStream,
