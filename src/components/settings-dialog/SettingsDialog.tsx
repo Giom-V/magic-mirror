@@ -11,6 +11,8 @@ import VoiceSelector from "./VoiceSelector";
 import ResponseModalitySelector from "./ResponseModalitySelector";
 import { FunctionDeclaration, LiveConnectConfig, Tool } from "@google/genai";
 import { setMusicVolume } from "../../tools/music-tool";
+import { AppConfig } from "../../types";
+import CameraOrientationSelector from "./CameraOrientationSelector";
 
 type FunctionDeclarationsTool = Tool & {
   functionDeclarations: FunctionDeclaration[];
@@ -58,7 +60,7 @@ export default function SettingsDialog() {
 
   const updateConfig: FormEventHandler<HTMLTextAreaElement> = useCallback(
     (event: ChangeEvent<HTMLTextAreaElement>) => {
-      const newConfig: LiveConnectConfig = {
+      const newConfig: AppConfig = {
         ...config,
         systemInstruction: event.target.value,
       };
@@ -69,7 +71,7 @@ export default function SettingsDialog() {
 
   const updateFunctionDescription = useCallback(
     (editedFdName: string, newDescription: string) => {
-      const newConfig: LiveConnectConfig = {
+      const newConfig: AppConfig = {
         ...config,
         tools:
           config.tools?.map((tool) => {
@@ -113,6 +115,7 @@ export default function SettingsDialog() {
           <div className="mode-selectors">
             <ResponseModalitySelector />
             <VoiceSelector />
+            <CameraOrientationSelector />
           </div>
 
           <h3>System Instructions</h3>

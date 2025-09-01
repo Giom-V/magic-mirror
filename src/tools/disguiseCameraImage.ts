@@ -1,6 +1,6 @@
 import { GoogleGenAI, Part } from "@google/genai";
-import config from "../config.json";
 import { UseMediaStreamResult } from "../hooks/use-media-stream-mux";
+import { AppConfig } from "../types";
 
 function fileToGenerativePart(data: string, mimeType: string): Part {
   return {
@@ -14,7 +14,8 @@ function fileToGenerativePart(data: string, mimeType: string): Part {
 export async function disguiseCameraImage(
   disguise_character: string,
   webcam: UseMediaStreamResult,
-  setEditedImage: (image: string | null) => void
+  setEditedImage: (image: string | null) => void,
+  config: AppConfig
 ) {
   console.log("Using tool: disguise_camera_image");
   const stream = await webcam.start();
@@ -31,7 +32,15 @@ export async function disguiseCameraImage(
     if (!ctx) {
       return;
     }
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    if (config.camera?.orientation === "vertical") {
+      canvas.width = video.videoHeight;
+      canvas.height = video.videoWidth;
+      ctx.translate(video.videoHeight, 0);
+      ctx.rotate(Math.PI / 2);
+    }
+
+    ctx.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
     const dataUrl = canvas.toDataURL("image/jpeg");
     const base64Data = dataUrl.split(",")[1];
 

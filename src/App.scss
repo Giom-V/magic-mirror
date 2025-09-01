@@ -160,10 +160,29 @@ body {
     }
 
     .edited-image {
-      width: 80%;
-      height: 80%;
+      position: relative;
+      max-width: 100%;
+      max-height: 100%;
       object-fit: contain;
-      z-index: 10;
+      z-index: 30;
+      justify-self: center;
+      align-self: center;
+    }
+
+    .face {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      justify-self: center;
+      align-self: center;
+    }
+
+    .talking-video {
+      position: relative;
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      z-index: 0;
       justify-self: center;
       align-self: center;
     }

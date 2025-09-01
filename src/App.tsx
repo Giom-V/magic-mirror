@@ -19,7 +19,6 @@ import "./App.scss";
 import { useWebcam } from "./hooks/use-webcam";
 import { LiveAPIProvider, useLiveAPIContext } from "./contexts/LiveAPIContext";
 import SidePanel from "./components/side-panel/SidePanel";
-import { Altair } from "./components/altair/Altair";
 import ControlTray from "./components/control-tray/ControlTray";
 import MagicEffect from "./components/magic-effect/MagicEffect";
 import cn from "classnames";
@@ -43,16 +42,28 @@ function App() {
   // this video reference is used for displaying the active stream, whether that is the webcam or screen capture
   // feel free to style as you see fit
   const videoRef = useRef<HTMLVideoElement>(null);
+  const talkingVideoRef = useRef<HTMLVideoElement>(null);
   // either the screen capture, the video or null, if null we hide it
   const [videoStream, setVideoStream] = useState<MediaStream | null>(null);
+  const [showVideo, setShowVideo] = useState(false);
   const [editedImage, setEditedImage] = useState<string | null>(null);
   const [muted, setMuted] = useState(false);
   const [sidePanelOpen, setSidePanelOpen] = useState(false);
   const [controlsVisible, setControlsVisible] = useState(true);
+  const [didAutoConnect, setDidAutoConnect] = useState(false);
   const webcam = useWebcam();
 
-  const { connected, connect, disconnect } = useLiveAPIContext();
+  const { connected, connect, disconnect, config } = useLiveAPIContext();
 
+  useEffect(() => {
+    if (config.autoStart && config.autoStart.enabled && !connected && !didAutoConnect) {
+      setDidAutoConnect(true);
+      connect();
+      if (config.autoStart.withCamera) {
+        webcam.start().then(setVideoStream);
+      }
+    }
+  }, [connect, webcam, setVideoStream, connected, didAutoConnect]);
 
   useEffect(() => {
     let timeoutId: NodeJS.Timeout;
@@ -98,11 +109,26 @@ function App() {
       } else if (event.key === "d") {
         setSidePanelOpen(!sidePanelOpen);
       } else if (event.key === "i") {
-        disguiseCameraImage("a fantasy character", webcam, setEditedImage);
+        disguiseCameraImage(
+          "a fantasy character",
+          webcam,
+          setEditedImage,
+          config
+        );
       } else if (event.key === "m") {
         toggleMusic();
       } else if (event.key === "Delete") {
         setEditedImage(null);
+      } else if (event.key.toLowerCase() === "v") {
+        setShowVideo((prev) => {
+          const newShowVideo = !prev;
+          if (newShowVideo) {
+            talkingVideoRef.current?.play();
+          } else {
+            talkingVideoRef.current?.pause();
+          }
+          return newShowVideo;
+        });
       }
     };
 
@@ -111,7 +137,7 @@ function App() {
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [connected, connect, disconnect, setMuted, webcam, setEditedImage]);
+  }, [connected, connect, disconnect, setMuted, webcam, setEditedImage, setShowVideo]);
 
   return (
     <div className="App">
@@ -124,9 +150,15 @@ function App() {
         />
         <main>
           <div className="main-app-area">
+            <img src="face.png" alt="face" className="face" />
+            <video
+              ref={talkingVideoRef}
+              src="talking.mp4"
+              className={cn("talking-video", { hidden: !showVideo })}
+              loop
+            />
             {/* APP goes here */}
             {editedImage && <MagicEffect imageUrl={editedImage} />}
-            <Altair />
             <video
               className={cn("stream", {
                 hidden: !videoRef.current || !videoStream,

@@ -27,6 +27,7 @@ import "./side-panel.scss";
 import { useWebcam } from "../../hooks/use-webcam";
 import { LiveServerToolCall } from "@google/genai";
 import { disguiseCameraImage } from "../../tools/disguiseCameraImage";
+import { editImage } from "../../tools/editImage";
 
 const filterOptions = [
   { value: "conversations", label: "Conversations" },
@@ -45,7 +46,7 @@ export default function SidePanel({
   open: boolean;
   onToggle: () => void;
 }) {
-  const { connected, client } = useLiveAPIContext();
+  const { connected, client, config: liveConfig } = useLiveAPIContext();
   const loggerRef = useRef<HTMLDivElement>(null);
   const loggerLastHeightRef = useRef<number>(-1);
   const { log, logs } = useLoggerStore();
@@ -92,7 +93,8 @@ export default function SidePanel({
           disguiseCameraImage(
             editCall.args.disguise_character as string,
             webcam,
-            setEditedImage
+            setEditedImage,
+            liveConfig
           );
         } else {
           console.error("disguise_character argument not found in tool call");
@@ -104,6 +106,22 @@ export default function SidePanel({
       );
       if (clearCall) {
         setEditedImage(null);
+      }
+
+      const editImageCall = toolCall.functionCalls.find(
+        (fc) => fc.name === config.tools.edit_image.name
+      );
+
+      if (editImageCall) {
+        if (editImageCall.args && editImageCall.args.prompt && editedImage) {
+          editImage(
+            editImageCall.args.prompt as string,
+            editedImage,
+            setEditedImage
+          );
+        } else {
+          console.error("prompt or image not found in tool call");
+        }
       }
     };
 

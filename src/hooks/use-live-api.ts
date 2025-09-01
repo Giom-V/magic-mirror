@@ -22,7 +22,6 @@ import { AudioStreamer } from "../lib/audio-streamer";
 import { audioContext } from "../lib/utils";
 import VolMeterWorket from "../lib/worklets/vol-meter";
 import {
-  LiveConnectConfig,
   FunctionDeclaration,
   Type,
   Modality,
@@ -32,11 +31,12 @@ import {
   LiveServerToolCall,
 } from "@google/genai";
 import { playMusic, stopMusic } from "../tools/music-tool";
+import { AppConfig } from "../types";
 
 export type UseLiveAPIResults = {
   client: GenAILiveClient;
-  setConfig: (config: LiveConnectConfig) => void;
-  config: LiveConnectConfig;
+  setConfig: (config: AppConfig) => void;
+  config: AppConfig;
   model: string;
   setModel: (model: string) => void;
   connected: boolean;
@@ -50,7 +50,7 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
   const audioStreamerRef = useRef<AudioStreamer | null>(null);
 
   const [model, setModel] = useState<string>(appConfig.liveModel);
-  const [config, setConfig] = useState<LiveConnectConfig>(() => {
+  const [config, setConfig] = useState<AppConfig>(() => {
     const functionDeclarations = Object.values(appConfig.tools).map(
       (tool: any) => {
         const declaration = {
@@ -68,6 +68,7 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
     );
 
     return {
+      ...appConfig,
       responseModalities: [Modality.AUDIO],
       mediaResolution: MediaResolution.MEDIA_RESOLUTION_MEDIUM,
       proactivity: { proactiveAudio: true },
@@ -194,15 +195,28 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
     setConnected(false);
   }, [setConnected, client]);
 
-  return {
-    client,
-    config,
-    setConfig,
-    model,
-    setModel,
-    connected,
-    connect,
-    disconnect,
-    volume,
-  };
+  return useMemo(
+    () => ({
+      client,
+      config,
+      setConfig,
+      model,
+      setModel,
+      connected,
+      connect,
+      disconnect,
+      volume,
+    }),
+    [
+      client,
+      config,
+      setConfig,
+      model,
+      setModel,
+      connected,
+      connect,
+      disconnect,
+      volume,
+    ]
+  );
 }
