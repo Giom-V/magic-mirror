@@ -25,6 +25,20 @@
       "name": "clear_image_display",
       "description": "Clears the displayed image."
     },
+    "edit_image": {
+      "name": "edit_image",
+      "description": "Edit the previously generated image with a new prompt. For example, if the user wants to add a hat to the character, you can use this tool to add a hat.",
+      "parameters": {
+        "type": "OBJECT",
+        "properties": {
+          "prompt": {
+            "type": "STRING",
+            "description": "The prompt to edit the image with. e.g. 'add a hat', 'make the background blue', 'add a sword'"
+          }
+        },
+        "required": ["prompt"]
+      }
+    },
     "renderAltair": {
       "name": "render_altair",
       "description": "Displays an altair graph in json format.",
