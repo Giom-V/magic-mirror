@@ -42,8 +42,10 @@ function App() {
   // this video reference is used for displaying the active stream, whether that is the webcam or screen capture
   // feel free to style as you see fit
   const videoRef = useRef<HTMLVideoElement>(null);
+  const talkingVideoRef = useRef<HTMLVideoElement>(null);
   // either the screen capture, the video or null, if null we hide it
   const [videoStream, setVideoStream] = useState<MediaStream | null>(null);
+  const [showVideo, setShowVideo] = useState(false);
   const [editedImage, setEditedImage] = useState<string | null>(null);
   const [muted, setMuted] = useState(false);
   const [sidePanelOpen, setSidePanelOpen] = useState(false);
@@ -100,6 +102,16 @@ function App() {
         disguiseCameraImage("a fantasy character", webcam, setEditedImage);
       } else if (event.key === "Delete") {
         setEditedImage(null);
+      } else if (event.key.toLowerCase() === "v") {
+        setShowVideo((prev) => {
+          const newShowVideo = !prev;
+          if (newShowVideo) {
+            talkingVideoRef.current?.play();
+          } else {
+            talkingVideoRef.current?.pause();
+          }
+          return newShowVideo;
+        });
       }
     };
 
@@ -108,7 +120,7 @@ function App() {
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [connected, connect, disconnect, setMuted, webcam, setEditedImage]);
+  }, [connected, connect, disconnect, setMuted, webcam, setEditedImage, setShowVideo]);
 
   return (
     <div className="App">
@@ -121,6 +133,13 @@ function App() {
         />
         <main>
           <div className="main-app-area">
+            <img src="face.png" alt="face" className="face" />
+            <video
+              ref={talkingVideoRef}
+              src="talking.mp4"
+              className={cn("talking-video", { hidden: !showVideo })}
+              loop
+            />
             {/* APP goes here */}
             {editedImage && <MagicEffect imageUrl={editedImage} />}
             <Altair />

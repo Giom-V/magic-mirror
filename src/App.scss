@@ -167,6 +167,19 @@ body {
       justify-self: center;
       align-self: center;
     }
+
+    .face {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+
+    .talking-video {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      z-index: 20;
+    }
   }
 
   .function-call {

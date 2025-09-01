@@ -24,6 +24,7 @@ $ npm install && npm start
 | `Space` | Press to talk. |
 | `i` | Apply a "fantasy character" disguise to the camera image. |
 | `Delete` | Remove the image disguise. |
+| `v` | Play/Pause the talking animation. |
 
 ### UI Controls
 
