@@ -1,4 +1,10 @@
-import { GoogleGenAI, MusicSession, WeightedPrompt } from "@google/genai";
+import {
+    GoogleGenAI,
+    LiveMusicSession,
+    WeightedPrompt,
+    LiveMusicServerMessage,
+    LiveMusicPlaybackControl
+} from "@google/genai";
 import { base64ToArrayBuffer } from "./utils";
 
 const API_KEY = process.env.REACT_APP_GEMINI_API_KEY as string;
@@ -55,7 +61,7 @@ async function handleAudioChunk(chunk: ArrayBuffer) {
 
 class LyriaMusicClient {
   private client: GoogleGenAI;
-  private session: MusicSession | null = null;
+  private session: LiveMusicSession | null = null;
   private static instance: LyriaMusicClient;
 
   private connectionPromise: Promise<void> | null = null;
@@ -86,7 +92,7 @@ class LyriaMusicClient {
         this.client.live.music.connect({
           model: "models/lyria-realtime-exp",
           callbacks: {
-            onmessage: (message) => {
+            onmessage: (message: LiveMusicServerMessage) => {
               if (message.setupComplete) {
                 console.log("Lyria setup complete.");
                 this.isReady = true;
@@ -94,15 +100,17 @@ class LyriaMusicClient {
               }
               if (message.serverContent?.audioChunks) {
                 for (const chunk of message.serverContent.audioChunks) {
-                  const audioBuffer = base64ToArrayBuffer(chunk.data);
-                  handleAudioChunk(audioBuffer);
+                  if (chunk.data) {
+                    const audioBuffer = base64ToArrayBuffer(chunk.data);
+                    handleAudioChunk(audioBuffer);
+                  }
                 }
               }
               if(message.filteredPrompt) {
                 console.warn(`Lyria prompt filtered: ${message.filteredPrompt.text} - Reason: ${message.filteredPrompt.filteredReason}`);
               }
             },
-            onerror: (error) => {
+            onerror: (error: ErrorEvent) => {
               console.error("Lyria session error:", error)
               this.isReady = false;
               this.connectionPromise = null;
@@ -115,16 +123,10 @@ class LyriaMusicClient {
               this.connectionPromise = null;
             },
           },
-        }).then(session => {
+        }).then((session: LiveMusicSession) => {
           this.session = session;
-          // Set the initial config right after getting the session
-          this.session.setMusicGenerationConfig({
-              musicGenerationConfig: {
-                  audioFormat: "pcm16",
-                  sampleRateHz: 44100,
-              },
-          });
-        }).catch(err => {
+          // The config appears to be set by the connection, not a separate call.
+        }).catch((err: Error) => {
             console.error("Lyria connection failed:", err);
             this.isReady = false;
             this.connectionPromise = null;

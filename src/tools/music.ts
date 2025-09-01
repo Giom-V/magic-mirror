@@ -1,4 +1,4 @@
-import { GoogleGenAI, Type } from "@google/genai";
+import { GoogleGenAI, Type, WeightedPrompt } from "@google/genai";
 import LyriaMusicClient from "../lib/lyria-music-client";
 
 const API_KEY = process.env.REACT_APP_GEMINI_API_KEY as string;
@@ -50,7 +50,13 @@ User request: "${prompt}"`
       },
     });
 
-    const weightedPrompts = JSON.parse(response.text);
+    const responseText = response.text;
+    if (!responseText) {
+        console.error("Failed to generate musical prompts. Response was empty.");
+        return;
+    }
+
+    const weightedPrompts: WeightedPrompt[] = JSON.parse(responseText);
     if (!weightedPrompts || weightedPrompts.length === 0) {
       console.error("Failed to generate musical prompts.");
       return;
