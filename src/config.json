@@ -38,20 +38,6 @@
         },
         "required": ["prompt"]
       }
-    },
-    "renderAltair": {
-      "name": "render_altair",
-      "description": "Displays an altair graph in json format.",
-      "parameters": {
-        "type": "OBJECT",
-        "properties": {
-          "json_graph": {
-            "type": "STRING",
-            "description": "JSON STRING representation of the graph to render. Must be a string, not a json object"
-          }
-        },
-        "required": ["json_graph"]
-      }
     }
   }
 }
