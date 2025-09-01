@@ -26,7 +26,7 @@ import cn from "classnames";
 import { LiveClientOptions } from "./types";
 import { GoogleGenAI, Part } from "@google/genai";
 import { disguiseCameraImage } from "./tools/disguiseCameraImage";
-import { playMusic } from "./tools/music";
+import { playPiano } from "./tools/piano-tool";
 import config from "./config.json";
 
 const API_KEY = process.env.REACT_APP_GEMINI_API_KEY as string;
@@ -99,6 +99,8 @@ function App() {
         setSidePanelOpen(!sidePanelOpen);
       } else if (event.key === "i") {
         disguiseCameraImage("a fantasy character", webcam, setEditedImage);
+      } else if (event.key === "m") {
+        playPiano();
       } else if (event.key === "Delete") {
         setEditedImage(null);
       }
@@ -110,13 +112,6 @@ function App() {
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, [connected, connect, disconnect, setMuted, webcam, setEditedImage]);
-
-  useEffect(() => {
-    (window as any).play_music = playMusic;
-    return () => {
-      delete (window as any).play_music;
-    };
-  }, []);
 
   return (
     <div className="App">
