@@ -35,13 +35,17 @@ const filterOptions = [
 ];
 
 export default function SidePanel({
-  editedImage,
-  setEditedImage,
+  disguisedImage,
+  lastEditedImage,
+  setDisguisedImage,
+  setLastEditedImage,
   open,
   onToggle,
 }: {
-  editedImage: string | null;
-  setEditedImage: (image: string | null) => void;
+  disguisedImage: string | null;
+  lastEditedImage: string | null;
+  setDisguisedImage: (image: string | null) => void;
+  setLastEditedImage: (image: string | null) => void;
   open: boolean;
   onToggle: () => void;
 }) {
@@ -92,7 +96,10 @@ export default function SidePanel({
           disguiseCameraImage(
             editCall.args.disguise_character as string,
             webcam,
-            setEditedImage,
+            (image) => {
+              setDisguisedImage(image);
+              setLastEditedImage(image);
+            },
             liveConfig
           );
         } else {
@@ -104,7 +111,23 @@ export default function SidePanel({
         (fc) => fc.name === config.tools.clearImage.name
       );
       if (clearCall) {
-        setEditedImage(null);
+        setDisguisedImage(null);
+        setLastEditedImage(null);
+      }
+      const editImageCall = toolCall.functionCalls.find(
+        (fc) => fc.name === config.tools.edit_image.name
+      );
+
+      if (editImageCall) {
+        if (editImageCall.args && editImageCall.args.prompt && lastEditedImage) {
+          editImage(
+            editImageCall.args.prompt as string,
+            lastEditedImage,
+            setLastEditedImage
+          );
+        } else {
+          console.error("prompt or image not found in tool call");
+        }
       }
     };
 
@@ -112,13 +135,14 @@ export default function SidePanel({
     return () => {
       client.off("toolcall", onToolCall);
     };
-  }, [client, webcam, setEditedImage]);
+  }, [client, webcam, setDisguisedImage, setLastEditedImage, lastEditedImage, disguisedImage]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "c") {
         console.log("Using tool: clear_image_display");
-        setEditedImage(null);
+        setDisguisedImage(null);
+        setLastEditedImage(null);
       }
     };
 
@@ -127,7 +151,7 @@ export default function SidePanel({
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [setEditedImage]);
+  }, [setDisguisedImage, setLastEditedImage]);
 
   const handleSubmit = () => {
     client.send([{ text: textInput }]);

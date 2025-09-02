@@ -46,7 +46,8 @@ function App() {
   // either the screen capture, the video or null, if null we hide it
   const [videoStream, setVideoStream] = useState<MediaStream | null>(null);
   const [showVideo, setShowVideo] = useState(false);
-  const [editedImage, setEditedImage] = useState<string | null>(null);
+  const [disguisedImage, setDisguisedImage] = useState<string | null>(null);
+  const [lastEditedImage, setLastEditedImage] = useState<string | null>(null);
   const [muted, setMuted] = useState(false);
   const [sidePanelOpen, setSidePanelOpen] = useState(false);
   const [controlsVisible, setControlsVisible] = useState(true);
@@ -114,13 +115,17 @@ function App() {
         disguiseCameraImage(
           "a fantasy character",
           webcam,
-          setEditedImage,
+          (image) => {
+            setDisguisedImage(image);
+            setLastEditedImage(image);
+          },
           config
         );
       } else if (event.key === "m") {
         toggleMusic();
       } else if (event.key === "Delete") {
-        setEditedImage(null);
+        setDisguisedImage(null);
+        setLastEditedImage(null);
       } else if (event.key.toLowerCase() === "v") {
         setShowVideo((prev) => {
           const newShowVideo = !prev;
@@ -145,7 +150,7 @@ function App() {
     disconnect,
     setMuted,
     webcam,
-    setEditedImage,
+    setDisguisedImage, setLastEditedImage, setShowVideo,
     setShowVideo,
     isInputFocused,
   ]);
@@ -154,8 +159,10 @@ function App() {
     <div className="App">
       <div className="streaming-console">
         <SidePanel
-          editedImage={editedImage}
-          setEditedImage={setEditedImage}
+          disguisedImage={disguisedImage}
+          lastEditedImage={lastEditedImage}
+          setDisguisedImage={setDisguisedImage}
+          setLastEditedImage={setLastEditedImage}
           open={sidePanelOpen}
           onToggle={() => setSidePanelOpen(!sidePanelOpen)}
         />
@@ -169,7 +176,13 @@ function App() {
               loop
             />
             {/* APP goes here */}
-            {editedImage && <MagicEffect imageUrl={editedImage} />}
+            {(() => {
+              const imageUrl = lastEditedImage || disguisedImage;
+              if (imageUrl) {
+                return <MagicEffect imageUrl={imageUrl} />;
+              }
+              return null;
+            })()}
             <video
               className={cn("stream", {
                 hidden: !videoRef.current || !videoStream,
