@@ -1,0 +1,22 @@
+# Dependencies
+node_modules/
+
+# Build output
+build/
+
+# Git
+.git/
+.gitignore
+
+# Google Cloud
+.gcloudignore
+
+# Docker
+Dockerfile
+nginx.conf
+
+# Environment variables
+.env
+
+# Documentation
+README.md
