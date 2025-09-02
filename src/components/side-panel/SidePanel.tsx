@@ -136,7 +136,7 @@ export default function SidePanel({
     return () => {
       client.off("toolcall", onToolCall);
     };
-  }, [client, webcam, setDisguisedImage, setLastEditedImage, lastEditedImage, disguisedImage]);
+  }, [client, webcam, setDisguisedImage, setLastEditedImage, lastEditedImage, disguisedImage, liveConfig]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
