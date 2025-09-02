@@ -165,9 +165,13 @@ function App() {
               loop
             />
             {/* APP goes here */}
-            {(lastEditedImage || disguisedImage) && (
-              <MagicEffect imageUrl={lastEditedImage || disguisedImage} />
-            )}
+            {(() => {
+              const imageUrl = lastEditedImage || disguisedImage;
+              if (imageUrl) {
+                return <MagicEffect imageUrl={imageUrl} />;
+              }
+              return null;
+            })()}
             <video
               className={cn("stream", {
                 hidden: !videoRef.current || !videoStream,
