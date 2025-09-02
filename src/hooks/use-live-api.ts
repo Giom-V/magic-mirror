@@ -170,28 +170,15 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
     setConnected(false);
   }, [setConnected, client]);
 
-  return useMemo(
-    () => ({
-      client,
-      config,
-      setConfig,
-      model,
-      setModel,
-      connected,
-      connect,
-      disconnect,
-      volume,
-    }),
-    [
-      client,
-      config,
-      setConfig,
-      model,
-      setModel,
-      connected,
-      connect,
-      disconnect,
-      volume,
-    ]
-  );
+  return {
+    client,
+    config,
+    setConfig,
+    model,
+    setModel,
+    connected,
+    connect,
+    disconnect,
+    volume,
+  };
 }

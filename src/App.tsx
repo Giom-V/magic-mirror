@@ -49,20 +49,13 @@ function App() {
   const [muted, setMuted] = useState(false);
   const [sidePanelOpen, setSidePanelOpen] = useState(false);
   const [controlsVisible, setControlsVisible] = useState(true);
-  const [didAutoConnect, setDidAutoConnect] = useState(false);
   const webcam = useWebcam();
 
   const { connected, connect, disconnect } = useLiveAPIContext();
 
   useEffect(() => {
-    if (config.autoStart.enabled && !connected && !didAutoConnect) {
-      setDidAutoConnect(true);
-      connect();
-      if (config.autoStart.withCamera) {
-        webcam.start().then(setVideoStream);
-      }
-    }
-  }, [connect, webcam, setVideoStream, connected, didAutoConnect]);
+    connect();
+  }, [connect]);
 
   useEffect(() => {
     let timeoutId: NodeJS.Timeout;
