@@ -43,6 +43,8 @@ export type UseLiveAPIResults = {
   connect: () => Promise<void>;
   disconnect: () => Promise<void>;
   volume: number;
+  isInputFocused: boolean;
+  setInputFocused: (isInputFocused: boolean) => void;
 };
 
 export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
@@ -71,7 +73,6 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
       ...appConfig,
       responseModalities: [Modality.AUDIO],
       mediaResolution: MediaResolution.MEDIA_RESOLUTION_MEDIUM,
-      proactivity: { proactiveAudio: true },
       realtimeInputConfig: {
         automaticActivityDetection: {
           disabled: false,
@@ -89,7 +90,6 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
         parts: [{ text: appConfig.systemInstruction }],
       },
       speechConfig: {
-        languageCode: "fr-FR",
         voiceConfig: {
           prebuiltVoiceConfig: {
             voiceName: "Aoede",
@@ -106,6 +106,7 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
   });
   const [connected, setConnected] = useState(false);
   const [volume, setVolume] = useState(0);
+  const [isInputFocused, setInputFocused] = useState(false);
 
   // register audio for streaming server -> speakers
   useEffect(() => {
@@ -206,6 +207,8 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
       connect,
       disconnect,
       volume,
+      isInputFocused,
+      setInputFocused,
     }),
     [
       client,
@@ -217,6 +220,8 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
       connect,
       disconnect,
       volume,
+      isInputFocused,
+      setInputFocused,
     ]
   );
 }

@@ -27,7 +27,6 @@ import "./side-panel.scss";
 import { useWebcam } from "../../hooks/use-webcam";
 import { LiveServerToolCall } from "@google/genai";
 import { disguiseCameraImage } from "../../tools/disguiseCameraImage";
-import { editImage } from "../../tools/editImage";
 
 const filterOptions = [
   { value: "conversations", label: "Conversations" },
@@ -115,7 +114,6 @@ export default function SidePanel({
         setDisguisedImage(null);
         setLastEditedImage(null);
       }
-
       const editImageCall = toolCall.functionCalls.find(
         (fc) => fc.name === config.tools.edit_image.name
       );

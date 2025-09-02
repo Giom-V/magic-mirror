@@ -13,6 +13,7 @@ import { FunctionDeclaration, LiveConnectConfig, Tool } from "@google/genai";
 import { setMusicVolume } from "../../tools/music-tool";
 import { AppConfig } from "../../types";
 import CameraOrientationSelector from "./CameraOrientationSelector";
+import ModelSelector from "./ModelSelector";
 
 type FunctionDeclarationsTool = Tool & {
   functionDeclarations: FunctionDeclaration[];
@@ -20,7 +21,8 @@ type FunctionDeclarationsTool = Tool & {
 
 export default function SettingsDialog() {
   const [open, setOpen] = useState(false);
-  const { config, setConfig, connected } = useLiveAPIContext();
+  const { config, setConfig, connected, setInputFocused } =
+    useLiveAPIContext();
   const functionDeclarations: FunctionDeclaration[] = useMemo(() => {
     if (!Array.isArray(config.tools)) {
       return [];
@@ -103,68 +105,74 @@ export default function SettingsDialog() {
         settings
       </button>
       <dialog className="dialog" style={{ display: open ? "block" : "none" }}>
-        <div className={`dialog-container ${connected ? "disabled" : ""}`}>
-          {connected && (
-            <div className="connected-indicator">
-              <p>
-                These settings can only be applied before connecting and will
-                override other settings.
-              </p>
+        <button
+          className="close-button material-symbols-outlined"
+          onClick={() => setOpen(false)}
+        >
+          close
+        </button>
+        <div className="dialog-container">
+          <div className={connected ? "disabled" : ""}>
+            <div className="mode-selectors">
+              <ModelSelector />
+              <ResponseModalitySelector />
+              <VoiceSelector />
             </div>
-          )}
+          </div>
           <div className="mode-selectors">
-            <ResponseModalitySelector />
-            <VoiceSelector />
             <CameraOrientationSelector />
           </div>
-
-          <h3>System Instructions</h3>
-          <textarea
-            className="system"
-            onChange={updateConfig}
-            value={systemInstruction}
-          />
-          <h4>Function declarations</h4>
-          <div className="function-declarations">
-            <div className="fd-rows">
-              {functionDeclarations.map((fd, fdKey) => (
-                <div className="fd-row" key={`function-${fdKey}`}>
-                  <span className="fd-row-name">{fd.name}</span>
-                  <span className="fd-row-args">
-                    {Object.keys(fd.parameters?.properties || {}).map(
-                      (item, k) => (
-                        <span key={k}>{item}</span>
-                      )
-                    )}
-                  </span>
-                  <input
-                    key={`fd-${fd.description}`}
-                    className="fd-row-description"
-                    type="text"
-                    defaultValue={fd.description}
-                    onBlur={(e) =>
-                      updateFunctionDescription(fd.name!, e.target.value)
-                    }
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-        <div className="music-settings-container">
+          <div className="music-settings-container">
             <h3>Music Settings</h3>
             <div className="music-settings">
-                <label htmlFor="music-volume">Music Volume</label>
-                <input
-                  type="range"
-                  id="music-volume"
-                  min="0"
-                  max="1"
-                  step="0.05"
-                  defaultValue="0.5"
-                  onChange={(e) => setMusicVolume(parseFloat(e.target.value))}
-                />
+              <label htmlFor="music-volume">Music Volume</label>
+              <input
+                type="range"
+                id="music-volume"
+                min="0"
+                max="1"
+                step="0.05"
+                defaultValue="0.5"
+                onChange={(e) => setMusicVolume(parseFloat(e.target.value))}
+              />
             </div>
+          </div>
+          <div className={connected ? "disabled" : ""}>
+            <h3>System Instructions</h3>
+            <textarea
+              className="system"
+              onChange={updateConfig}
+              value={systemInstruction}
+              onFocus={() => setInputFocused(true)}
+              onBlur={() => setInputFocused(false)}
+            />
+            <h4>Function declarations</h4>
+            <div className="function-declarations">
+              <div className="fd-rows">
+                {functionDeclarations.map((fd, fdKey) => (
+                  <div className="fd-row" key={`function-${fdKey}`}>
+                    <span className="fd-row-name">{fd.name}</span>
+                    <span className="fd-row-args">
+                      {Object.keys(fd.parameters?.properties || {}).map(
+                        (item, k) => (
+                          <span key={k}>{item}</span>
+                        )
+                      )}
+                    </span>
+                    <input
+                      key={`fd-${fd.description}`}
+                      className="fd-row-description"
+                      type="text"
+                      defaultValue={fd.description}
+                      onBlur={(e) =>
+                        updateFunctionDescription(fd.name!, e.target.value)
+                      }
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       </dialog>
     </div>
