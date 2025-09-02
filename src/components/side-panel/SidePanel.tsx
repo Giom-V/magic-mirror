@@ -27,6 +27,7 @@ import "./side-panel.scss";
 import { useWebcam } from "../../hooks/use-webcam";
 import { LiveServerToolCall } from "@google/genai";
 import { disguiseCameraImage } from "../../tools/disguiseCameraImage";
+import { editImage } from "../../tools/editImage";
 
 const filterOptions = [
   { value: "conversations", label: "Conversations" },
