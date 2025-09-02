@@ -86,9 +86,6 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
         triggerTokens: "25600",
         slidingWindow: { targetTokens: "12800" },
       },
-      systemInstruction: {
-        parts: [{ text: appConfig.systemInstruction }],
-      },
       speechConfig: {
         voiceConfig: {
           prebuiltVoiceConfig: {
