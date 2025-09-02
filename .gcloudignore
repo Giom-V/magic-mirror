@@ -1,5 +1,25 @@
-# Ignore everything except app.yaml and the build directory
+# This file specifies files that are *not* uploaded to Google Cloud when
+# deploying. For more information, see:
+# https://cloud.google.com/sdk/gcloud/reference/topic/gcloudignore
+
+# By default, ignore everything.
 *
+
+# The following files are needed for the Docker build
+!Dockerfile
+!nginx.conf
+!package.json
+!package-lock.json
+!public
+!public/**
+!src
+!src/**
+!tsconfig.json
+!.env.local
+
+# The following files are not needed for the Docker build, but were
+# included in the original .gcloudignore. They are kept here to avoid
+# breaking other deployment methods.
 !app.yaml
 !build
 !build/**

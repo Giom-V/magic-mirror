@@ -26,4 +26,4 @@ handlers:
     static_files: build/index.html
     secure: always
     redirect_http_response_code: 301
-    upload: buid/index.html
+    upload: build/index.html
