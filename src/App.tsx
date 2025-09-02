@@ -165,7 +165,9 @@ function App() {
               loop
             />
             {/* APP goes here */}
-            <MagicEffect imageUrl={lastEditedImage || disguisedImage} />
+            {(lastEditedImage || disguisedImage) && (
+              <MagicEffect imageUrl={lastEditedImage || disguisedImage} />
+            )}
             <video
               className={cn("stream", {
                 hidden: !videoRef.current || !videoStream,
