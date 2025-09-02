@@ -10,6 +10,10 @@ import { useLiveAPIContext } from "../../contexts/LiveAPIContext";
 import VoiceSelector from "./VoiceSelector";
 import ResponseModalitySelector from "./ResponseModalitySelector";
 import { FunctionDeclaration, LiveConnectConfig, Tool } from "@google/genai";
+import { setMusicVolume } from "../../tools/music-tool";
+import { AppConfig } from "../../types";
+import CameraOrientationSelector from "./CameraOrientationSelector";
+import ModelSelector from "./ModelSelector";
 
 type FunctionDeclarationsTool = Tool & {
   functionDeclarations: FunctionDeclaration[];
@@ -57,7 +61,7 @@ export default function SettingsDialog() {
 
   const updateConfig: FormEventHandler<HTMLTextAreaElement> = useCallback(
     (event: ChangeEvent<HTMLTextAreaElement>) => {
-      const newConfig: LiveConnectConfig = {
+      const newConfig: AppConfig = {
         ...config,
         systemInstruction: event.target.value,
       };
@@ -68,7 +72,7 @@ export default function SettingsDialog() {
 
   const updateFunctionDescription = useCallback(
     (editedFdName: string, newDescription: string) => {
-      const newConfig: LiveConnectConfig = {
+      const newConfig: AppConfig = {
         ...config,
         tools:
           config.tools?.map((tool) => {
@@ -110,8 +114,10 @@ export default function SettingsDialog() {
             </div>
           )}
           <div className="mode-selectors">
+            <ModelSelector />
             <ResponseModalitySelector />
             <VoiceSelector />
+            <CameraOrientationSelector />
           </div>
 
           <h3>System Instructions</h3>
@@ -146,6 +152,21 @@ export default function SettingsDialog() {
               ))}
             </div>
           </div>
+        </div>
+        <div className="music-settings-container">
+            <h3>Music Settings</h3>
+            <div className="music-settings">
+                <label htmlFor="music-volume">Music Volume</label>
+                <input
+                  type="range"
+                  id="music-volume"
+                  min="0"
+                  max="1"
+                  step="0.05"
+                  defaultValue="0.5"
+                  onChange={(e) => setMusicVolume(parseFloat(e.target.value))}
+                />
+            </div>
         </div>
       </dialog>
     </div>

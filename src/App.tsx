@@ -25,6 +25,7 @@ import cn from "classnames";
 import { LiveClientOptions } from "./types";
 import { GoogleGenAI, Part } from "@google/genai";
 import { disguiseCameraImage } from "./tools/disguiseCameraImage";
+import { toggleMusic } from "./tools/music-tool";
 import config from "./config.json";
 
 const API_KEY = process.env.REACT_APP_GEMINI_API_KEY as string;
@@ -51,11 +52,17 @@ function App() {
   const [controlsVisible, setControlsVisible] = useState(true);
   const webcam = useWebcam();
 
-  const { connected, connect, disconnect } = useLiveAPIContext();
+  const { connected, connect, disconnect, config } = useLiveAPIContext();
 
   useEffect(() => {
-    connect();
-  }, [connect]);
+    if (config.autoStart && config.autoStart.enabled && !connected && !didAutoConnect) {
+      setDidAutoConnect(true);
+      connect();
+      if (config.autoStart.withCamera) {
+        webcam.start().then(setVideoStream);
+      }
+    }
+  }, [connect, webcam, setVideoStream, connected, didAutoConnect]);
 
   useEffect(() => {
     let timeoutId: NodeJS.Timeout;
@@ -101,7 +108,14 @@ function App() {
       } else if (event.key === "d") {
         setSidePanelOpen(!sidePanelOpen);
       } else if (event.key === "i") {
-        disguiseCameraImage("a fantasy character", webcam, setEditedImage);
+        disguiseCameraImage(
+          "a fantasy character",
+          webcam,
+          setEditedImage,
+          config
+        );
+      } else if (event.key === "m") {
+        toggleMusic();
       } else if (event.key === "Delete") {
         setEditedImage(null);
       } else if (event.key.toLowerCase() === "v") {

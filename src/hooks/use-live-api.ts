@@ -22,19 +22,21 @@ import { AudioStreamer } from "../lib/audio-streamer";
 import { audioContext } from "../lib/utils";
 import VolMeterWorket from "../lib/worklets/vol-meter";
 import {
-  LiveConnectConfig,
   FunctionDeclaration,
   Type,
   Modality,
   MediaResolution,
   StartSensitivity,
   EndSensitivity,
+  LiveServerToolCall,
 } from "@google/genai";
+import { playMusic, stopMusic } from "../tools/music-tool";
+import { AppConfig } from "../types";
 
 export type UseLiveAPIResults = {
   client: GenAILiveClient;
-  setConfig: (config: LiveConnectConfig) => void;
-  config: LiveConnectConfig;
+  setConfig: (config: AppConfig) => void;
+  config: AppConfig;
   model: string;
   setModel: (model: string) => void;
   connected: boolean;
@@ -48,7 +50,7 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
   const audioStreamerRef = useRef<AudioStreamer | null>(null);
 
   const [model, setModel] = useState<string>(appConfig.liveModel);
-  const [config, setConfig] = useState<LiveConnectConfig>(() => {
+  const [config, setConfig] = useState<AppConfig>(() => {
     const functionDeclarations = Object.values(appConfig.tools).map(
       (tool: any) => {
         const declaration = {
@@ -66,9 +68,9 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
     );
 
     return {
+      ...appConfig,
       responseModalities: [Modality.AUDIO],
       mediaResolution: MediaResolution.MEDIA_RESOLUTION_MEDIUM,
-      proactivity: { proactiveAudio: true },
       realtimeInputConfig: {
         automaticActivityDetection: {
           disabled: false,
@@ -86,7 +88,6 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
         parts: [{ text: appConfig.systemInstruction }],
       },
       speechConfig: {
-        languageCode: "fr-FR",
         voiceConfig: {
           prebuiltVoiceConfig: {
             voiceName: "Aoede",
@@ -138,12 +139,32 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
     const onAudio = (data: ArrayBuffer) =>
       audioStreamerRef.current?.addPCM16(new Uint8Array(data));
 
+    const onToolCall = (toolCall: LiveServerToolCall) => {
+      if (toolCall.functionCalls) {
+        for (const fnCall of toolCall.functionCalls) {
+          switch (fnCall.name) {
+            case "play_music":
+              console.log("Handling play_music tool call", fnCall.args);
+              if (fnCall.args && typeof fnCall.args.prompt === "string") {
+                playMusic(fnCall.args.prompt, fnCall.args.modelName as string | undefined);
+              }
+              break;
+            case "stop_music":
+              console.log("Handling stop_music tool call");
+              stopMusic();
+              break;
+          }
+        }
+      }
+    };
+
     client
       .on("error", onError)
       .on("open", onOpen)
       .on("close", onClose)
       .on("interrupted", stopAudioStreamer)
-      .on("audio", onAudio);
+      .on("audio", onAudio)
+      .on("toolcall", onToolCall);
 
     return () => {
       client
@@ -152,6 +173,7 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
         .off("close", onClose)
         .off("interrupted", stopAudioStreamer)
         .off("audio", onAudio)
+        .off("toolcall", onToolCall)
         .disconnect();
     };
   }, [client]);
@@ -167,6 +189,7 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
 
   const disconnect = useCallback(async () => {
     client.disconnect();
+    stopMusic();
     setConnected(false);
   }, [setConnected, client]);
 
