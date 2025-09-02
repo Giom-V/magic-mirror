@@ -58,6 +58,14 @@ function App() {
   const { connected, connect, disconnect, config, isInputFocused } =
     useLiveAPIContext();
 
+  const handleUndo = useCallback(() => {
+    if (!lastEditedImage) return;
+    // Swap the current image with the last edited image
+    const currentImage = disguisedImage;
+    setDisguisedImage(lastEditedImage);
+    setLastEditedImage(currentImage);
+  }, [disguisedImage, lastEditedImage]);
+
   useEffect(() => {
     if (config.autoStart && config.autoStart.enabled && !connected && !didAutoConnect) {
       setDidAutoConnect(true);
@@ -117,16 +125,22 @@ function App() {
           "a fantasy character",
           webcam,
           (image) => {
-            setDisguisedImage(image);
-            setLastEditedImage(image);
+            setDisguisedImage((currentImage) => {
+              setLastEditedImage(currentImage);
+              return image;
+            });
           },
           config
         );
       } else if (event.key === "m") {
         toggleMusic();
+      } else if (event.key === "u") {
+        handleUndo();
       } else if (event.key === "Delete") {
-        setDisguisedImage(null);
-        setLastEditedImage(null);
+        setDisguisedImage((currentImage) => {
+          setLastEditedImage(currentImage);
+          return null;
+        });
       } else if (event.key.toLowerCase() === "v") {
         setShowVideo((prev) => {
           const newShowVideo = !prev;
@@ -151,9 +165,11 @@ function App() {
     disconnect,
     setMuted,
     webcam,
-    setDisguisedImage, setLastEditedImage, setShowVideo,
+    setDisguisedImage,
+    setLastEditedImage,
     setShowVideo,
     isInputFocused,
+    handleUndo,
   ]);
 
   return (
@@ -204,6 +220,14 @@ function App() {
               onMuteChange={setMuted}
             >
               {/* put your own buttons here */}
+              <button
+                className="action-button"
+                title="Annuler"
+                onClick={handleUndo}
+                disabled={!lastEditedImage}
+              >
+                <span className="material-symbols-outlined">undo</span>
+              </button>
             </ControlTray>
           </div>
         </main>
