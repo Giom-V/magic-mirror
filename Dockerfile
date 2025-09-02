@@ -22,8 +22,13 @@ FROM nginx:stable-alpine
 # Copy the build output from the build stage
 COPY --from=build /app/build /usr/share/nginx/html
 
+# Change ownership of the web assets to the nginx user
+RUN chown -R nginx:nginx /usr/share/nginx/html && chmod -R 755 /usr/share/nginx/html
+
+# Forward request and error logs to Docker log collector
+RUN ln -sf /dev/stdout /var/log/nginx/access.log && ln -sf /dev/stderr /var/log/nginx/error.log
+
 # Copy the custom Nginx configuration
-# This file will be created in the next step.
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Expose port 8080 for Cloud Run

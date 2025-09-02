@@ -15,6 +15,7 @@
 !src
 !src/**
 !tsconfig.json
+!.env.local
 
 # The following files are not needed for the Docker build, but were
 # included in the original .gcloudignore. They are kept here to avoid
