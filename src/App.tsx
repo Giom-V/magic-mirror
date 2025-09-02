@@ -53,7 +53,8 @@ function App() {
   const [didAutoConnect, setDidAutoConnect] = useState(false);
   const webcam = useWebcam();
 
-  const { connected, connect, disconnect, config } = useLiveAPIContext();
+  const { connected, connect, disconnect, config, isInputFocused } =
+    useLiveAPIContext();
 
   useEffect(() => {
     if (config.autoStart && config.autoStart.enabled && !connected && !didAutoConnect) {
@@ -93,6 +94,7 @@ function App() {
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
+      if (isInputFocused) return;
       if (event.key === "Enter") {
         if (connected) {
           disconnect();
@@ -137,7 +139,16 @@ function App() {
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [connected, connect, disconnect, setMuted, webcam, setEditedImage, setShowVideo]);
+  }, [
+    connected,
+    connect,
+    disconnect,
+    setMuted,
+    webcam,
+    setEditedImage,
+    setShowVideo,
+    isInputFocused,
+  ]);
 
   return (
     <div className="App">
