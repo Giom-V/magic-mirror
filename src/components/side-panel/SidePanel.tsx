@@ -114,21 +114,21 @@ export default function SidePanel({
         setDisguisedImage(null);
         setLastEditedImage(null);
       }
-      const editImageCall = toolCall.functionCalls.find(
-        (fc) => fc.name === config.tools.edit_image.name
-      );
+      // const editImageCall = toolCall.functionCalls.find(
+      //   (fc) => fc.name === config.tools.edit_image.name
+      // );
 
-      if (editImageCall) {
-        if (editImageCall.args && editImageCall.args.prompt && lastEditedImage) {
-          editImage(
-            editImageCall.args.prompt as string,
-            lastEditedImage,
-            setLastEditedImage
-          );
-        } else {
-          console.error("prompt or image not found in tool call");
-        }
-      }
+      // if (editImageCall) {
+      //   if (editImageCall.args && editImageCall.args.prompt && lastEditedImage) {
+      //     editImage(
+      //       editImageCall.args.prompt as string,
+      //       lastEditedImage,
+      //       setLastEditedImage
+      //     );
+      //   } else {
+      //     console.error("prompt or image not found in tool call");
+      //   }
+      // }
     };
 
     client.on("toolcall", onToolCall);
