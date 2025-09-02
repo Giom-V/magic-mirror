@@ -43,6 +43,8 @@ export type UseLiveAPIResults = {
   connect: () => Promise<void>;
   disconnect: () => Promise<void>;
   volume: number;
+  isInputFocused: boolean;
+  setInputFocused: (isInputFocused: boolean) => void;
 };
 
 export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
@@ -104,6 +106,7 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
   });
   const [connected, setConnected] = useState(false);
   const [volume, setVolume] = useState(0);
+  const [isInputFocused, setInputFocused] = useState(false);
 
   // register audio for streaming server -> speakers
   useEffect(() => {
@@ -193,15 +196,32 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
     setConnected(false);
   }, [setConnected, client]);
 
-  return {
-    client,
-    config,
-    setConfig,
-    model,
-    setModel,
-    connected,
-    connect,
-    disconnect,
-    volume,
-  };
+  return useMemo(
+    () => ({
+      client,
+      config,
+      setConfig,
+      model,
+      setModel,
+      connected,
+      connect,
+      disconnect,
+      volume,
+      isInputFocused,
+      setInputFocused,
+    }),
+    [
+      client,
+      config,
+      setConfig,
+      model,
+      setModel,
+      connected,
+      connect,
+      disconnect,
+      volume,
+      isInputFocused,
+      setInputFocused,
+    ]
+  );
 }
