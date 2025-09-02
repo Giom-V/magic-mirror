@@ -71,17 +71,50 @@ function App() {
   }, [volume]);
 
   useEffect(() => {
-    if (isTalking) {
-      standingVideoRef.current?.pause();
-      const nextVideo = Math.floor(Math.random() * 4) + 1;
-      if (talkingVideoRef.current) {
-        talkingVideoRef.current.src = `talking${nextVideo}.mp4`;
-        talkingVideoRef.current.play();
+    const talkingVideo = talkingVideoRef.current;
+    const standingVideo = standingVideoRef.current;
+
+    let ignore = false;
+
+    const managePlayback = async () => {
+      if (isTalking) {
+        standingVideo?.pause();
+        if (talkingVideo) {
+          const nextVideo = Math.floor(Math.random() * 4) + 1;
+          talkingVideo.src = `talking${nextVideo}.mp4`;
+          try {
+            await talkingVideo.play();
+            if (ignore) {
+              talkingVideo.pause();
+            }
+          } catch (e: any) {
+            if (e.name !== "AbortError") {
+              console.error("talking video play error", e);
+            }
+          }
+        }
+      } else {
+        talkingVideo?.pause();
+        if (standingVideo) {
+          try {
+            await standingVideo.play();
+            if (ignore) {
+              standingVideo.pause();
+            }
+          } catch (e: any) {
+            if (e.name !== "AbortError") {
+              console.error("standing video play error", e);
+            }
+          }
+        }
       }
-    } else {
-      talkingVideoRef.current?.pause();
-      standingVideoRef.current?.play();
-    }
+    };
+
+    managePlayback();
+
+    return () => {
+      ignore = true;
+    };
   }, [isTalking]);
 
   useEffect(() => {
