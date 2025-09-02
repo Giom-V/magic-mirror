@@ -73,7 +73,6 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
       ...appConfig,
       responseModalities: [Modality.AUDIO],
       mediaResolution: MediaResolution.MEDIA_RESOLUTION_MEDIUM,
-      proactivity: { proactiveAudio: true },
       realtimeInputConfig: {
         automaticActivityDetection: {
           disabled: false,
@@ -91,7 +90,6 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
         parts: [{ text: appConfig.systemInstruction }],
       },
       speechConfig: {
-        languageCode: "fr-FR",
         voiceConfig: {
           prebuiltVoiceConfig: {
             voiceName: "Aoede",

@@ -13,6 +13,7 @@ import { FunctionDeclaration, LiveConnectConfig, Tool } from "@google/genai";
 import { setMusicVolume } from "../../tools/music-tool";
 import { AppConfig } from "../../types";
 import CameraOrientationSelector from "./CameraOrientationSelector";
+import ModelSelector from "./ModelSelector";
 
 type FunctionDeclarationsTool = Tool & {
   functionDeclarations: FunctionDeclaration[];
@@ -113,6 +114,7 @@ export default function SettingsDialog() {
         <div className="dialog-container">
           <div className={connected ? "disabled" : ""}>
             <div className="mode-selectors">
+              <ModelSelector />
               <ResponseModalitySelector />
               <VoiceSelector />
             </div>
