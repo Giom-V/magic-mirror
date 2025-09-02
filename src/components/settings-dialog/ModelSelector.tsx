@@ -4,23 +4,29 @@ import { useLiveAPIContext } from "../../contexts/LiveAPIContext";
 import { AppConfig } from "../../types";
 
 type ModelOption = {
+  id: string;
   value: string;
   label: string;
+  modelName: string;
   config: Partial<AppConfig>;
 };
 
 const modelOptions: ModelOption[] = [
   {
-    value: "gemini-2.5-flash-preview-native-audio-dialog",
+    id: "proactive",
+    value: "proactive",
     label: "Gemini 2.5 Flash (Proactive Audio)",
+    modelName: "gemini-2.5-flash-preview-native-audio-dialog",
     config: {
       proactivity: { proactiveAudio: true },
       speechConfig: {},
     },
   },
   {
-    value: "gemini-2.5-flash-live-preview-fr",
+    id: "french",
+    value: "french",
     label: "Gemini 2.5 Flash (French)",
+    modelName: "gemini-2.5-flash-live-preview",
     config: {
       proactivity: { proactiveAudio: false },
       speechConfig: {
@@ -29,8 +35,10 @@ const modelOptions: ModelOption[] = [
     },
   },
   {
-    value: "gemini-2.5-flash-live-preview-en",
+    id: "english",
+    value: "english",
     label: "Gemini 2.5 Flash (English)",
+    modelName: "gemini-2.5-flash-live-preview",
     config: {
       proactivity: { proactiveAudio: false },
       speechConfig: {
@@ -45,12 +53,15 @@ export default function ModelSelector() {
 
   const [selectedOption, setSelectedOption] = useState<ModelOption | null>(
     () => {
-      return modelOptions.find((opt) => opt.value === model) || modelOptions[0];
+      return (
+        modelOptions.find((opt) => opt.id === config.defaultModelId) ||
+        modelOptions[0]
+      );
     }
   );
 
   useEffect(() => {
-    const currentOption = modelOptions.find((opt) => opt.value === model);
+    const currentOption = modelOptions.find((opt) => opt.modelName === model);
     if (currentOption) {
       setSelectedOption(currentOption);
     }
@@ -65,7 +76,7 @@ export default function ModelSelector() {
 
   const updateModel = useCallback(
     (option: ModelOption) => {
-      setModel(option.value);
+      setModel(option.modelName);
       const newConfig: AppConfig = {
         ...config,
         ...option.config,

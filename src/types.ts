@@ -24,6 +24,7 @@ import {
 
 export type AppConfig = LiveConnectConfig & {
   liveModel: string;
+  defaultModelId?: string;
   imageEditModel: string;
   systemInstructions?: { [key: string]: string };
   camera?: {

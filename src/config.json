@@ -1,5 +1,6 @@
 {
-  "liveModel": "gemini-2.5-flash-live-preview-fr",
+  "liveModel": "gemini-2.5-flash-live-preview",
+  "defaultModelId": "french",
   "imageEditModel": "gemini-2.5-flash-image-preview",
   "camera": {
     "orientation": "horizontal"
