@@ -19,7 +19,7 @@ const modelOptions: ModelOption[] = [
     },
   },
   {
-    value: "gemini-2.5-flash-live-preview",
+    value: "gemini-2.5-flash-live-preview-fr",
     label: "Gemini 2.5 Flash (French)",
     config: {
       proactivity: { proactiveAudio: false },
@@ -29,7 +29,7 @@ const modelOptions: ModelOption[] = [
     },
   },
   {
-    value: "gemini-2.5-flash-live-preview",
+    value: "gemini-2.5-flash-live-preview-en",
     label: "Gemini 2.5 Flash (English)",
     config: {
       proactivity: { proactiveAudio: false },
@@ -70,9 +70,13 @@ export default function ModelSelector() {
         ...config,
         ...option.config,
         speechConfig: {
-            ...config.speechConfig,
-            ...option.config.speechConfig,
-        }
+          ...config.speechConfig,
+          ...option.config.speechConfig,
+        },
+        systemInstruction:
+          config.systemInstructions?.[
+            option.config.speechConfig?.languageCode || "fr-FR"
+          ] || "",
       };
       setConfig(newConfig);
     },
