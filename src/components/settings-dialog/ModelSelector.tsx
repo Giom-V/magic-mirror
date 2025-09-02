@@ -75,7 +75,7 @@ export default function ModelSelector() {
         },
         systemInstruction:
           config.systemInstructions?.[
-            option.config.speechConfig?.languageCode || "fr-FR"
+            option.config.speechConfig?.languageCode || "en-US"
           ] || "",
       };
       setConfig(newConfig);
