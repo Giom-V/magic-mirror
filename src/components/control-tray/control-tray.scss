@@ -129,10 +129,15 @@
     gap: 4px;
 
     .connection-button-container {
+      display: flex;
       border-radius: 27px;
       border: 1px solid var(--Neutral-30);
       background: var(--Neutral-5);
       padding: 10px;
+
+      .restart-button {
+        margin-left: 8px;
+      }
     }
 
     .text-indicator {
