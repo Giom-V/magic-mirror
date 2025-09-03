@@ -42,6 +42,7 @@ export type UseLiveAPIResults = {
   connected: boolean;
   connect: () => Promise<void>;
   disconnect: () => Promise<void>;
+  restart: () => Promise<void>;
   volume: number;
   isInputFocused: boolean;
   setInputFocused: (isInputFocused: boolean) => void;
@@ -193,6 +194,11 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
     setConnected(false);
   }, [setConnected, client]);
 
+  const restart = useCallback(async () => {
+    await disconnect();
+    await connect();
+  }, [disconnect, connect]);
+
   return useMemo(
     () => ({
       client,
@@ -203,6 +209,7 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
       connected,
       connect,
       disconnect,
+      restart,
       volume,
       isInputFocused,
       setInputFocused,
@@ -216,6 +223,7 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
       connected,
       connect,
       disconnect,
+      restart,
       volume,
       isInputFocused,
       setInputFocused,

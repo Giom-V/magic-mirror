@@ -78,7 +78,7 @@ function ControlTray({
   const renderCanvasRef = useRef<HTMLCanvasElement>(null);
   const connectButtonRef = useRef<HTMLButtonElement>(null);
 
-  const { client, connected, connect, disconnect, volume } =
+  const { client, connected, connect, disconnect, restart, volume } =
     useLiveAPIContext();
 
   useEffect(() => {
@@ -218,6 +218,13 @@ function ControlTray({
             <span className="material-symbols-outlined filled">
               {connected ? "pause" : "play_arrow"}
             </span>
+          </button>
+          <button
+            className={cn("action-button", "restart-button")}
+            onClick={() => restart()}
+            disabled={!connected}
+          >
+            <span className="material-symbols-outlined filled">replay</span>
           </button>
         </div>
         <span className="text-indicator">Streaming</span>
