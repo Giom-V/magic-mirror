@@ -42,10 +42,13 @@ function App() {
   // this video reference is used for displaying the active stream, whether that is the webcam or screen capture
   // feel free to style as you see fit
   const videoRef = useRef<HTMLVideoElement>(null);
-  const talkingVideoRef = useRef<HTMLVideoElement>(null);
+  const standingVideoRef = useRef<HTMLVideoElement>(null);
   // either the screen capture, the video or null, if null we hide it
   const [videoStream, setVideoStream] = useState<MediaStream | null>(null);
-  const [showVideo, setShowVideo] = useState(false);
+  const [showVideo, setShowVideo] = useState(true);
+  const [isTalking, setIsTalking] = useState(false);
+  const [activeTalkingVideo, setActiveTalkingVideo] = useState(0);
+  const endOfSpeechTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [disguisedImage, setDisguisedImage] = useState<string | null>(null);
   const [editedImage, setEditedImage] = useState<string | null>(null);
   const [lastEditedImage, setLastEditedImage] = useState<string | null>(null);
@@ -55,8 +58,39 @@ function App() {
   const [didAutoConnect, setDidAutoConnect] = useState(false);
   const webcam = useWebcam();
 
-  const { connected, connect, disconnect, config, isInputFocused } =
-    useLiveAPIContext();
+  const {
+    connected,
+    connect,
+    disconnect,
+    config,
+    isInputFocused,
+    volume,
+  } = useLiveAPIContext();
+
+  useEffect(() => {
+    if (volume > 0.1) {
+      if (endOfSpeechTimerRef.current) {
+        clearTimeout(endOfSpeechTimerRef.current);
+        endOfSpeechTimerRef.current = null;
+      }
+      if (!isTalking) {
+        setIsTalking(true);
+      }
+    } else if (isTalking) {
+      if (endOfSpeechTimerRef.current === null) {
+        endOfSpeechTimerRef.current = setTimeout(() => {
+          setIsTalking(false);
+          endOfSpeechTimerRef.current = null;
+        }, (config as any).endOfSpeechGracePeriodMs || 2000);
+      }
+    }
+  }, [volume, isTalking]);
+
+  useEffect(() => {
+    if (isTalking) {
+      setActiveTalkingVideo(Math.floor(Math.random() * 4));
+    }
+  }, [isTalking]);
 
   useEffect(() => {
     if (config.autoStart && config.autoStart.enabled && !connected && !didAutoConnect) {
@@ -128,15 +162,7 @@ function App() {
         setDisguisedImage(null);
         setLastEditedImage(null);
       } else if (event.key.toLowerCase() === "v") {
-        setShowVideo((prev) => {
-          const newShowVideo = !prev;
-          if (newShowVideo) {
-            talkingVideoRef.current?.play();
-          } else {
-            talkingVideoRef.current?.pause();
-          }
-          return newShowVideo;
-        });
+        setShowVideo(!showVideo);
       }
     };
 
@@ -151,9 +177,11 @@ function App() {
     disconnect,
     setMuted,
     webcam,
-    setDisguisedImage, setLastEditedImage, setShowVideo,
+    setDisguisedImage,
+    setLastEditedImage,
     setShowVideo,
     isInputFocused,
+    showVideo,
   ]);
 
   return (
@@ -169,12 +197,49 @@ function App() {
         />
         <main>
           <div className="main-app-area">
-            <img src="face.png" alt="face" className="face" />
             <video
-              ref={talkingVideoRef}
-              src="talking.mp4"
-              className={cn("talking-video", { hidden: !showVideo })}
+              ref={standingVideoRef}
+              src="standing.mp4"
+              className={cn("face", { hidden: !showVideo || isTalking })}
+              autoPlay
               loop
+              muted
+            />
+            <video
+              src="talking1.mp4"
+              className={cn("face", {
+                hidden: !showVideo || !isTalking || activeTalkingVideo !== 0,
+              })}
+              autoPlay
+              muted
+              onEnded={() => setActiveTalkingVideo(Math.floor(Math.random() * 4))}
+            />
+            <video
+              src="talking2.mp4"
+              className={cn("face", {
+                hidden: !showVideo || !isTalking || activeTalkingVideo !== 1,
+              })}
+              autoPlay
+              muted
+              onEnded={() => setActiveTalkingVideo(Math.floor(Math.random() * 4))}
+            />
+            <video
+              src="talking3.mp4"
+              className={cn("face", {
+                hidden: !showVideo || !isTalking || activeTalkingVideo !== 2,
+              })}
+              autoPlay
+              muted
+              onEnded={() => setActiveTalkingVideo(Math.floor(Math.random() * 4))}
+            />
+            <video
+              src="talking4.mp4"
+              className={cn("face", {
+                hidden: !showVideo || !isTalking || activeTalkingVideo !== 3,
+              })}
+              autoPlay
+              muted
+              onEnded={() => setActiveTalkingVideo(Math.floor(Math.random() * 4))}
             />
             {/* APP goes here */}
             {(() => {

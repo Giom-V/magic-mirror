@@ -21,6 +21,11 @@
 import "core-js/features/structured-clone";
 import "@testing-library/jest-dom";
 
+window.HTMLMediaElement.prototype.play = jest.fn()
+window.HTMLMediaElement.prototype.pause = jest.fn()
+window.HTMLMediaElement.prototype.load = jest.fn()
+
+
 // Mock MediaStream
 class MockMediaStream {
   getTracks() {
