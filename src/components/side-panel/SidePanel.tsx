@@ -124,7 +124,8 @@ export default function SidePanel({
           editImage(
             editImageCall.args.prompt as string,
             lastEditedImage,
-            setLastEditedImage
+            setLastEditedImage,
+            liveConfig
           );
         } else {
           console.error("prompt or image not found in tool call");

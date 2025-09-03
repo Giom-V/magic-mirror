@@ -34,6 +34,9 @@ export type AppConfig = LiveConnectConfig & {
     enabled: boolean;
     withCamera: boolean;
   };
+  music?: {
+    accompany?: boolean;
+  };
 };
 
 /**

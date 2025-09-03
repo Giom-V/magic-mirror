@@ -1,6 +1,7 @@
 import { GoogleGenAI, Part } from "@google/genai";
 import { UseMediaStreamResult } from "../hooks/use-media-stream-mux";
 import { AppConfig } from "../types";
+import { playMusic } from "./music-tool";
 
 function fileToGenerativePart(data: string, mimeType: string): Part {
   return {
@@ -18,6 +19,11 @@ export async function disguiseCameraImage(
   config: AppConfig
 ) {
   console.log("Using tool: disguise_camera_image");
+  if (config.music?.accompany) {
+    playMusic(
+      `a fairy tale music that would go with a picture of me as ${disguise_character}`
+    );
+  }
   const stream = await webcam.start();
   const video = document.createElement("video");
   video.srcObject = stream;

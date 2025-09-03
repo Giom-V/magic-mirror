@@ -1,5 +1,6 @@
 import { GoogleGenAI, Part } from "@google/genai";
-import config from "../config.json";
+import { AppConfig } from "../types";
+import { playMusic } from "./music-tool";
 
 function fileToGenerativePart(data: string, mimeType: string): Part {
   return {
@@ -13,9 +14,13 @@ function fileToGenerativePart(data: string, mimeType: string): Part {
 export async function editImage(
   prompt: string,
   image: string,
-  setEditedImage: (image: string | null) => void
+  setEditedImage: (image: string | null) => void,
+  config: AppConfig
 ) {
   console.log("Using tool: editImage");
+  if (config.music?.accompany) {
+    playMusic(`Alter the music to take into account that we're adding ${prompt}`);
+  }
   const base64Data = image.split(",")[1];
 
   const ai = new GoogleGenAI({

@@ -136,6 +136,26 @@ export default function SettingsDialog() {
                 onChange={(e) => setMusicVolume(parseFloat(e.target.value))}
               />
             </div>
+            <div className="accompany-setting">
+              <label htmlFor="accompany-music">
+                Accompany Images with Music
+              </label>
+              <input
+                type="checkbox"
+                id="accompany-music"
+                checked={config.music?.accompany || false}
+                onChange={(e) => {
+                  const newConfig: AppConfig = {
+                    ...config,
+                    music: {
+                      ...config.music,
+                      accompany: e.target.checked,
+                    },
+                  };
+                  setConfig(newConfig);
+                }}
+              />
+            </div>
           </div>
           <div className={connected ? "disabled" : ""}>
             <h3>System Instructions</h3>
