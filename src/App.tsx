@@ -43,11 +43,11 @@ function App() {
   // feel free to style as you see fit
   const videoRef = useRef<HTMLVideoElement>(null);
   const standingVideoRef = useRef<HTMLVideoElement>(null);
-  const talkingVideoRef = useRef<HTMLVideoElement>(null);
   // either the screen capture, the video or null, if null we hide it
   const [videoStream, setVideoStream] = useState<MediaStream | null>(null);
   const [showVideo, setShowVideo] = useState(true);
   const [isTalking, setIsTalking] = useState(false);
+  const [activeTalkingVideo, setActiveTalkingVideo] = useState(0);
   const [disguisedImage, setDisguisedImage] = useState<string | null>(null);
   const [editedImage, setEditedImage] = useState<string | null>(null);
   const [lastEditedImage, setLastEditedImage] = useState<string | null>(null);
@@ -71,50 +71,9 @@ function App() {
   }, [volume]);
 
   useEffect(() => {
-    const talkingVideo = talkingVideoRef.current;
-    const standingVideo = standingVideoRef.current;
-
-    let ignore = false;
-
-    const managePlayback = async () => {
-      if (isTalking) {
-        standingVideo?.pause();
-        if (talkingVideo) {
-          const nextVideo = Math.floor(Math.random() * 4) + 1;
-          talkingVideo.src = `talking${nextVideo}.mp4`;
-          try {
-            await talkingVideo.play();
-            if (ignore) {
-              talkingVideo.pause();
-            }
-          } catch (e: any) {
-            if (e.name !== "AbortError") {
-              console.error("talking video play error", e);
-            }
-          }
-        }
-      } else {
-        talkingVideo?.pause();
-        if (standingVideo) {
-          try {
-            await standingVideo.play();
-            if (ignore) {
-              standingVideo.pause();
-            }
-          } catch (e: any) {
-            if (e.name !== "AbortError") {
-              console.error("standing video play error", e);
-            }
-          }
-        }
-      }
-    };
-
-    managePlayback();
-
-    return () => {
-      ignore = true;
-    };
+    if (isTalking) {
+      setActiveTalkingVideo(Math.floor(Math.random() * 4));
+    }
   }, [isTalking]);
 
   useEffect(() => {
@@ -231,11 +190,40 @@ function App() {
               muted
             />
             <video
-              ref={talkingVideoRef}
-              src="talking.mp4"
-              className={cn("face", { hidden: !showVideo || !isTalking })}
+              src="talking1.mp4"
+              className={cn("face", {
+                hidden: !showVideo || !isTalking || activeTalkingVideo !== 0,
+              })}
+              autoPlay
               muted
-              onEnded={() => setIsTalking(false)}
+              onEnded={() => setActiveTalkingVideo(Math.floor(Math.random() * 4))}
+            />
+            <video
+              src="talking2.mp4"
+              className={cn("face", {
+                hidden: !showVideo || !isTalking || activeTalkingVideo !== 1,
+              })}
+              autoPlay
+              muted
+              onEnded={() => setActiveTalkingVideo(Math.floor(Math.random() * 4))}
+            />
+            <video
+              src="talking3.mp4"
+              className={cn("face", {
+                hidden: !showVideo || !isTalking || activeTalkingVideo !== 2,
+              })}
+              autoPlay
+              muted
+              onEnded={() => setActiveTalkingVideo(Math.floor(Math.random() * 4))}
+            />
+            <video
+              src="talking4.mp4"
+              className={cn("face", {
+                hidden: !showVideo || !isTalking || activeTalkingVideo !== 3,
+              })}
+              autoPlay
+              muted
+              onEnded={() => setActiveTalkingVideo(Math.floor(Math.random() * 4))}
             />
             {/* APP goes here */}
             {(() => {
