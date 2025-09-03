@@ -48,6 +48,7 @@ function App() {
   const [showVideo, setShowVideo] = useState(true);
   const [isTalking, setIsTalking] = useState(false);
   const [activeTalkingVideo, setActiveTalkingVideo] = useState(0);
+  const endOfSpeechTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [disguisedImage, setDisguisedImage] = useState<string | null>(null);
   const [editedImage, setEditedImage] = useState<string | null>(null);
   const [lastEditedImage, setLastEditedImage] = useState<string | null>(null);
@@ -67,8 +68,23 @@ function App() {
   } = useLiveAPIContext();
 
   useEffect(() => {
-    setIsTalking(volume > 0.1);
-  }, [volume]);
+    if (volume > 0.1) {
+      if (endOfSpeechTimerRef.current) {
+        clearTimeout(endOfSpeechTimerRef.current);
+        endOfSpeechTimerRef.current = null;
+      }
+      if (!isTalking) {
+        setIsTalking(true);
+      }
+    } else if (isTalking) {
+      if (endOfSpeechTimerRef.current === null) {
+        endOfSpeechTimerRef.current = setTimeout(() => {
+          setIsTalking(false);
+          endOfSpeechTimerRef.current = null;
+        }, (config as any).endOfSpeechGracePeriodMs || 2000);
+      }
+    }
+  }, [volume, isTalking]);
 
   useEffect(() => {
     if (isTalking) {
