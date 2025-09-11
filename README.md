@@ -1,30 +1,45 @@
-# Live API - Web Console
+<p align="center">
+  <img src="public/face.png" alt="Project Face" width="200"/>
+</p>
 
-This repository contains a react-based starter app for using the [Live API](<[https://ai.google.dev/gemini-api](https://ai.google.dev/api/multimodal-live)>) over a websocket. It provides modules for streaming audio playback, recording user media such as from a microphone, webcam or screen capture as well as a unified log view to aid in development of your application.
+# Magic Mirror
 
-[![Live API Demo](readme/thumbnail.png)](https://www.youtube.com/watch?v=J_q7JY1XxFE)
+This repository is a demonstration of what can be built with the Gemini Live API and the genmedia (e.g., Veo, Lyria, Imagen) models from the Gemini family. It is based on the [react-based starter app](https://github.com/google-gemini/live-api-web-console) and transforms it into an interactive, voice-controlled "Magic Mirror".
 
-Watch the demo of the Live API [here](https://www.youtube.com/watch?v=J_q7JY1XxFE).
+## How to Run
 
-## Usage
+To get started, you'll need a free Gemini API key.
 
-To get started, [create a free Gemini API key](https://aistudio.google.com/apikey) and add it to the `.env` file. Then:
+1.  **Get an API Key:** Create your key at [aistudio.google.com/apikey](https://aistudio.google.com/apikey).
 
-```
-$ npm install && npm start
-```
+2.  **Set up your environment:** Create a `.env` file in the root of the project and add your API key like this:
+
+    ```
+    REACT_APP_GEMINI_API_KEY=YOUR_API_KEY
+    ```
+
+3.  **Install dependencies and run:** Open your terminal and run the following commands:
+
+    ```bash
+    npm install
+    npm start
+    ```
+
+The application will be available at `http://localhost:3000`.
 
 ## Controls
 
 ### Keyboard Shortcuts
 
-| Key | Action |
-| --- | --- |
-| `Enter` | Connect/Disconnect from the live stream. |
-| `Space` | Press to talk. |
-| `i` | Apply a "fantasy character" disguise to the camera image. |
-| `Delete` | Remove the image disguise. |
-| `v` | Play/Pause the talking animation. |
+| Key      | Action                                                   |
+| :------- | :------------------------------------------------------- |
+| `Enter`  | Connect or disconnect from the live stream.              |
+| `Space`  | Press to talk (or toggle mute if already connected).     |
+| `i`      | Disguise yourself as a fantasy character.                |
+| `Delete` | Remove the image disguise.                               |
+| `v`      | Play or pause the talking animation.                     |
+| `d`      | Show or hide the developer side panel.                   |
+| `m`      | Toggle background music.                                 |
 
 ### UI Controls
 
@@ -35,98 +50,36 @@ $ npm install && npm start
 | `present_to_all` / `cancel_presentation` | Start/Stop screen sharing. |
 | `videocam` / `videocam_off` | Turn on/off the camera. |
 
-We have provided several example applications on other branches of this repository:
+## What you can do with the Magic Mirror
 
-- [demos/GenExplainer](https://github.com/google-gemini/multimodal-live-api-web-console/tree/demos/genexplainer)
-- [demos/GenWeather](https://github.com/google-gemini/multimodal-live-api-web-console/tree/demos/genweather)
-- [demos/GenList](https://github.com/google-gemini/multimodal-live-api-web-console/tree/demos/genlist)
+The Magic Mirror is voice-controlled and designed to stay in character. Here are some things you can try:
 
-## Example
+*   **Tell stories:**
+    *   "Tell me a story about a brave knight."
+    *   "Let's write a story together."
 
-Below is an example of an entire application that will use Google Search grounding and then render graphs using [vega-embed](https://github.com/vega/vega-embed):
+*   **Disguise yourself:**
+    *   "Make me look like a wizard."
+    *   "I want to be a pirate."
+    *   (You can also use the `i` key to apply a generic fantasy disguise)
 
-```typescript
-import { type FunctionDeclaration, SchemaType } from "@google/generative-ai";
-import { useEffect, useRef, useState, memo } from "react";
-import vegaEmbed from "vega-embed";
-import { useLiveAPIContext } from "../../contexts/LiveAPIContext";
+*   **Edit your images:**
+    *   "Change the background to a castle."
+    *   "Make my hair blue."
 
-export const declaration: FunctionDeclaration = {
-  name: "render_altair",
-  description: "Displays an altair graph in json format.",
-  parameters: {
-    type: SchemaType.OBJECT,
-    properties: {
-      json_graph: {
-        type: SchemaType.STRING,
-        description:
-          "JSON STRING representation of the graph to render. Must be a string, not a json object",
-      },
-    },
-    required: ["json_graph"],
-  },
-};
+*   **Play music:**
+    *   "Play some fantasy music."
+    *   "I want to hear some epic adventure music."
 
-export function Altair() {
-  const [jsonString, setJSONString] = useState<string>("");
-  const { client, setConfig } = useLiveAPIContext();
-
-  useEffect(() => {
-    setConfig({
-      model: "models/gemini-2.0-flash-exp",
-      systemInstruction: {
-        parts: [
-          {
-            text: 'You are my helpful assistant. Any time I ask you for a graph call the "render_altair" function I have provided you. Dont ask for additional information just make your best judgement.',
-          },
-        ],
-      },
-      tools: [{ googleSearch: {} }, { functionDeclarations: [declaration] }],
-    });
-  }, [setConfig]);
-
-  useEffect(() => {
-    const onToolCall = (toolCall: ToolCall) => {
-      console.log(`got toolcall`, toolCall);
-      const fc = toolCall.functionCalls.find(
-        (fc) => fc.name === declaration.name
-      );
-      if (fc) {
-        const str = (fc.args as any).json_graph;
-        setJSONString(str);
-      }
-    };
-    client.on("toolcall", onToolCall);
-    return () => {
-      client.off("toolcall", onToolCall);
-    };
-  }, [client]);
-
-  const embedRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (embedRef.current && jsonString) {
-      vegaEmbed(embedRef.current, JSON.parse(jsonString));
-    }
-  }, [embedRef, jsonString]);
-  return <div className="vega-embed" ref={embedRef} />;
-}
-```
-
-## development
+## Development
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
-Project consists of:
 
-- an Event-emitting websocket-client to ease communication between the websocket and the front-end
-- communication layer for processing audio in and out
-- a boilerplate view for starting to build your apps and view logs
-
-## Available Scripts
+### Available Scripts
 
 In the project directory, you can run:
 
-### `npm start`
+#### `npm start`
 
 Runs the app in the development mode.\
 Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
@@ -134,7 +87,7 @@ Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 The page will reload if you make edits.\
 You will also see any lint errors in the console.
 
-### `npm run build`
+#### `npm run build`
 
 Builds the app for production to the `build` folder.\
 It correctly bundles React in production mode and optimizes the build for the best performance.
@@ -143,5 +96,7 @@ The build is minified and the filenames include the hashes.\
 Your app is ready to be deployed!
 
 See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+
+---
 
 _This is an experiment showcasing the Live API, not an official Google product. We’ll do our best to support and maintain this experiment but your mileage may vary. We encourage open sourcing projects as a way of learning from each other. Please respect our and other creators' rights, including copyright and trademark rights when present, when sharing these works and creating derivative work. If you want more info on Google's policy, you can find that [here](https://developers.google.com/terms/site-policies)._
