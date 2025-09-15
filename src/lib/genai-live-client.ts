@@ -69,7 +69,7 @@ export interface LiveClientEventTypes {
  * If you dont want to use react you can still use this.
  */
 export class GenAILiveClient extends EventEmitter<LiveClientEventTypes> {
-  protected client: GoogleGenAI;
+  protected client: GoogleGenAI | null = null;
 
   private _status: "connected" | "disconnected" | "connecting" = "disconnected";
   public get status() {
@@ -94,7 +94,9 @@ export class GenAILiveClient extends EventEmitter<LiveClientEventTypes> {
 
   constructor(options: LiveClientOptions) {
     super();
-    this.client = new GoogleGenAI(options);
+    if (options.apiKey && typeof options.apiKey === 'string' && options.apiKey.length > 0) {
+      this.client = new GoogleGenAI(options);
+    }
     this.send = this.send.bind(this);
     this.onopen = this.onopen.bind(this);
     this.onerror = this.onerror.bind(this);
@@ -112,6 +114,9 @@ export class GenAILiveClient extends EventEmitter<LiveClientEventTypes> {
   }
 
   async connect(model: string, config: AppConfig): Promise<boolean> {
+    if (!this.client) {
+      return false;
+    }
     if (this._status === "connected" || this._status === "connecting") {
       return false;
     }

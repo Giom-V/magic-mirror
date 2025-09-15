@@ -29,9 +29,6 @@ import { toggleMusic } from "./tools/music-tool";
 import config from "./config.json";
 
 const API_KEY = process.env.REACT_APP_GEMINI_API_KEY as string;
-if (typeof API_KEY !== "string") {
-  throw new Error("set REACT_APP_GEMINI_API_KEY in .env");
-}
 
 const apiOptions: LiveClientOptions = {
   apiKey: API_KEY,
