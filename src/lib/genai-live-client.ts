@@ -95,7 +95,7 @@ export class GenAILiveClient extends EventEmitter<LiveClientEventTypes> {
   constructor(options: LiveClientOptions) {
     super();
     if (options.apiKey && typeof options.apiKey === 'string' && options.apiKey.length > 0) {
-      this.client = new GoogleGenAI(options.apiKey, options.httpOptions);
+      this.client = new GoogleGenAI(options);
     }
     this.send = this.send.bind(this);
     this.onopen = this.onopen.bind(this);
