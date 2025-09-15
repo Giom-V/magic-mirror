@@ -28,6 +28,7 @@ import { useWebcam } from "../../hooks/use-webcam";
 import { LiveServerToolCall } from "@google/genai";
 import { disguiseCameraImage } from "../../tools/disguiseCameraImage";
 import { editImage } from "../../tools/editImage";
+import { printImage } from "../../tools/print-tool";
 
 const filterOptions = [
   { value: "conversations", label: "Conversations" },
@@ -129,6 +130,18 @@ export default function SidePanel({
           );
         } else {
           console.error("prompt or image not found in tool call");
+        }
+      }
+
+      const printImageCall = toolCall.functionCalls.find(
+        (fc) => fc.name === config.tools.print_image.name
+      );
+
+      if (printImageCall) {
+        if (lastEditedImage) {
+          printImage(lastEditedImage);
+        } else {
+          console.error("No image to print");
         }
       }
     };
