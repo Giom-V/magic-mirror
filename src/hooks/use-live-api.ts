@@ -125,6 +125,16 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
   useEffect(() => {
     const onOpen = () => {
       setConnected(true);
+      if (config.introductoryMessage) {
+        const lang = navigator.language;
+        const message = lang.startsWith("fr")
+          ? config.introductoryMessage["fr-FR"]
+          : config.introductoryMessage["en-US"];
+
+        if (message) {
+          client.send({ text: message });
+        }
+      }
     };
 
     const onClose = () => {
@@ -177,7 +187,7 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
         .off("toolcall", onToolCall)
         .disconnect();
     };
-  }, [client]);
+  }, [client, config]);
 
   const connect = useCallback(async () => {
     if (!config) {

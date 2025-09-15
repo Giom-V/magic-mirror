@@ -27,6 +27,7 @@ export type AppConfig = LiveConnectConfig & {
   defaultModelId?: string;
   imageEditModel: string;
   systemInstructions?: { [key: string]: string };
+  introductoryMessage?: { [key: string]: string };
   camera?: {
     orientation: string;
   };
