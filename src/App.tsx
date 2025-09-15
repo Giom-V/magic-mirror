@@ -158,9 +158,14 @@ function App() {
         );
       } else if (event.key === "m") {
         toggleMusic();
+      } else if (event.key.toLowerCase() === "c") {
+        setDisguisedImage(null);
+        setLastEditedImage(null);
+        setShowVideo(true);
       } else if (event.key === "Delete") {
         setDisguisedImage(null);
         setLastEditedImage(null);
+        setShowVideo(true);
       } else if (event.key.toLowerCase() === "v") {
         setShowVideo(!showVideo);
       }
