@@ -59,7 +59,7 @@ export async function disguiseCameraImage(
       model: config.imageEditModel,
       contents: [
         imagePart,
-        `transform me into ${disguise_character}. Also feel free to slightly change the background for a more dreamy one.`,
+        `transform me into ${disguise_character}, but keep my face as much as possible. Also feel free to slightly change the background for a more dreamy one.`,
       ],
     });
 
