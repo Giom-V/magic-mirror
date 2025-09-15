@@ -53,6 +53,8 @@ function App() {
   const [sidePanelOpen, setSidePanelOpen] = useState(false);
   const [controlsVisible, setControlsVisible] = useState(true);
   const [didAutoConnect, setDidAutoConnect] = useState(false);
+  const [showDebugTimer, setShowDebugTimer] = useState(false);
+  const [countdown, setCountdown] = useState(0);
   const webcam = useWebcam();
 
   const {
@@ -65,14 +67,23 @@ function App() {
   } = useLiveAPIContext();
   const imageClearTimer = useRef<NodeJS.Timeout>();
   const modelMessageTimer = useRef<NodeJS.Timeout>();
+  const countdownInterval = useRef<NodeJS.Timeout>();
 
   const resetInactivityTimers = useCallback(() => {
     clearTimeout(imageClearTimer.current);
     clearTimeout(modelMessageTimer.current);
+    clearInterval(countdownInterval.current);
+
+    setCountdown(config.imageClearTimeout / 1000);
+
+    countdownInterval.current = setInterval(() => {
+      setCountdown((prev) => prev - 1);
+    }, 1000);
 
     imageClearTimer.current = setTimeout(() => {
       setDisguisedImage(null);
       setLastEditedImage(null);
+      clearInterval(countdownInterval.current);
     }, config.imageClearTimeout);
 
     modelMessageTimer.current = setTimeout(() => {
@@ -161,6 +172,8 @@ function App() {
           }
           return newShowVideo;
         });
+      } else if (event.key.toLowerCase() === "t") {
+        setShowDebugTimer((prev) => !prev);
       }
     };
 
@@ -198,6 +211,7 @@ function App() {
         />
         <main>
           <div className="main-app-area">
+            {showDebugTimer && <div className="debug-timer">{countdown}</div>}
             <img src="face.png" alt="face" className="face" />
             <video
               ref={talkingVideoRef}
