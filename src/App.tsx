@@ -56,6 +56,7 @@ function App() {
   const webcam = useWebcam();
 
   const {
+    client,
     connected,
     connect,
     disconnect,
@@ -92,12 +93,16 @@ function App() {
   useEffect(() => {
     if (config.autoStart && config.autoStart.enabled && !connected && !didAutoConnect) {
       setDidAutoConnect(true);
-      connect();
+      connect().then(() => {
+        const lang = navigator.language;
+        const message = lang.startsWith('fr') ? 'bonjour' : 'hello';
+        client.send({ text: message });
+      });
       if (config.autoStart.withCamera) {
         webcam.start().then(setVideoStream);
       }
     }
-  }, [connect, webcam, setVideoStream, connected, didAutoConnect]);
+  }, [connect, webcam, setVideoStream, connected, didAutoConnect, client]);
 
   useEffect(() => {
     let timeoutId: NodeJS.Timeout;
