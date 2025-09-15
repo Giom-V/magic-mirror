@@ -15,9 +15,8 @@
  */
 
 import "./react-select.scss";
-import config from "../../config.json";
 import cn from "classnames";
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState } from "react";
 import { RiSidebarFoldLine, RiSidebarUnfoldLine } from "react-icons/ri";
 import Select from "react-select";
 import { useLiveAPIContext } from "../../contexts/LiveAPIContext";
@@ -38,7 +37,7 @@ export default function SidePanel({
   open: boolean;
   onToggle: () => void;
 }) {
-  const { connected, client, config: liveConfig } = useLiveAPIContext();
+  const { connected, client } = useLiveAPIContext();
   const loggerRef = useRef<HTMLDivElement>(null);
   const loggerLastHeightRef = useRef<number>(-1);
   const { log, logs } = useLoggerStore();

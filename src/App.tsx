@@ -31,6 +31,7 @@ import {
 import { disguiseCameraImage } from "./tools/disguiseCameraImage";
 import { editImage } from "./tools/editImage";
 import { playMusic, stopMusic, toggleMusic } from "./tools/music-tool";
+import appConfig from "./config.json";
 
 const API_KEY = process.env.REACT_APP_GEMINI_API_KEY as string;
 if (typeof API_KEY !== "string") {
@@ -88,7 +89,7 @@ function App() {
 
         try {
           switch (fnCall.name) {
-            case config.tools.disguise_camera_image.name:
+            case appConfig.tools.disguise_camera_image.name:
               console.log(
                 "App.tsx: Handling disguise_camera_image tool call",
                 fnCall.args
@@ -104,7 +105,7 @@ function App() {
               scheduling = FunctionResponseScheduling.INTERRUPT;
               break;
 
-            case config.tools.edit_image.name:
+            case appConfig.tools.edit_image.name:
               console.log(
                 "App.tsx: Handling edit_image tool call",
                 fnCall.args
@@ -122,7 +123,7 @@ function App() {
               scheduling = FunctionResponseScheduling.INTERRUPT;
               break;
 
-            case config.tools.clearImage.name:
+            case appConfig.tools.clearImage.name:
               console.log("App.tsx: Handling clearImage tool call");
               setDisguisedImage(null);
               setLastEditedImage(null);

@@ -23,13 +23,13 @@ import { audioContext } from "../lib/utils";
 import VolMeterWorket from "../lib/worklets/vol-meter";
 import {
   FunctionDeclaration,
-  Type,
   Modality,
   MediaResolution,
   StartSensitivity,
   EndSensitivity,
 } from "@google/genai";
 import { AppConfig } from "../types";
+import { stopMusic } from "../tools/music-tool";
 
 export type UseLiveAPIResults = {
   client: GenAILiveClient;
