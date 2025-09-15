@@ -44,6 +44,7 @@ export async function editImage(
         const base64ImageBytes: string = part.inlineData.data;
         const imageUrl = `data:image/png;base64,${base64ImageBytes}`;
         setEditedImage(imageUrl);
+        break;
       }
     }
   }
