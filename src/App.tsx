@@ -48,7 +48,6 @@ function App() {
   const [sidePanelOpen, setSidePanelOpen] = useState(false);
   const [controlsVisible, setControlsVisible] = useState(true);
   const webcam = useWebcam();
-  const [didAutoConnect, setDidAutoConnect] = useState(false);
 
   const { connected, connect, disconnect, config } = useLiveAPIContext();
 
