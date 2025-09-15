@@ -55,8 +55,30 @@ function App() {
   const [didAutoConnect, setDidAutoConnect] = useState(false);
   const webcam = useWebcam();
 
-  const { connected, connect, disconnect, config, isInputFocused } =
-    useLiveAPIContext();
+  const {
+    client,
+    connected,
+    connect,
+    disconnect,
+    config,
+    isInputFocused,
+  } = useLiveAPIContext();
+  const imageClearTimer = useRef<NodeJS.Timeout>();
+  const modelMessageTimer = useRef<NodeJS.Timeout>();
+
+  const resetInactivityTimers = useCallback(() => {
+    clearTimeout(imageClearTimer.current);
+    clearTimeout(modelMessageTimer.current);
+
+    imageClearTimer.current = setTimeout(() => {
+      setDisguisedImage(null);
+      setLastEditedImage(null);
+    }, config.imageClearTimeout);
+
+    modelMessageTimer.current = setTimeout(() => {
+      client.send({ text: config.modelMessageText });
+    }, config.modelMessageTimeout);
+  }, [client, config, setDisguisedImage, setLastEditedImage]);
 
   useEffect(() => {
     if (config.autoStart && config.autoStart.enabled && !connected && !didAutoConnect) {
@@ -72,6 +94,7 @@ function App() {
     let timeoutId: NodeJS.Timeout;
 
     const showAndHide = () => {
+      resetInactivityTimers();
       setControlsVisible(true);
       clearTimeout(timeoutId);
       timeoutId = setTimeout(() => {
@@ -92,10 +115,11 @@ function App() {
       window.removeEventListener("mousemove", showAndHide);
       clearTimeout(timeoutId);
     };
-  }, [connected]);
+  }, [connected, resetInactivityTimers]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
+      resetInactivityTimers();
       if (isInputFocused) return;
       if (event.key === "Enter") {
         if (connected) {
@@ -141,9 +165,12 @@ function App() {
     };
 
     window.addEventListener("keydown", handleKeyDown);
+    resetInactivityTimers();
 
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
+      clearTimeout(imageClearTimer.current);
+      clearTimeout(modelMessageTimer.current);
     };
   }, [
     connected,
@@ -151,9 +178,11 @@ function App() {
     disconnect,
     setMuted,
     webcam,
-    setDisguisedImage, setLastEditedImage, setShowVideo,
+    setDisguisedImage,
+    setLastEditedImage,
     setShowVideo,
     isInputFocused,
+    resetInactivityTimers,
   ]);
 
   return (
