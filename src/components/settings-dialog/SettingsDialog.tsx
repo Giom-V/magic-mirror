@@ -9,7 +9,7 @@ import "./settings-dialog.scss";
 import { useLiveAPIContext } from "../../contexts/LiveAPIContext";
 import VoiceSelector from "./VoiceSelector";
 import ResponseModalitySelector from "./ResponseModalitySelector";
-import { FunctionDeclaration, LiveConnectConfig, Tool } from "@google/genai";
+import { FunctionDeclaration, Tool } from "@google/genai";
 import { setMusicVolume } from "../../tools/music-tool";
 import { AppConfig } from "../../types";
 import CameraOrientationSelector from "./CameraOrientationSelector";
