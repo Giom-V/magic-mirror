@@ -37,6 +37,7 @@ export type AppConfig = LiveConnectConfig & {
   music?: {
     accompany?: boolean;
   };
+  disguisePromptTemplate?: string;
 };
 
 /**
