@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useRef, useState, useEffect, useCallback } from "react";
+import { useRef, useState, useEffect } from "react";
 import "./App.scss";
 import { useWebcam } from "./hooks/use-webcam";
 import { LiveAPIProvider, useLiveAPIContext } from "./contexts/LiveAPIContext";
@@ -23,10 +23,14 @@ import ControlTray from "./components/control-tray/ControlTray";
 import MagicEffect from "./components/magic-effect/MagicEffect";
 import cn from "classnames";
 import { LiveClientOptions } from "./types";
-import { GoogleGenAI, Part } from "@google/genai";
+import {
+  FunctionResponse,
+  FunctionResponseScheduling,
+  LiveServerToolCall,
+} from "@google/genai";
 import { disguiseCameraImage } from "./tools/disguiseCameraImage";
-import { toggleMusic } from "./tools/music-tool";
-import config from "./config.json";
+import { editImage } from "./tools/editImage";
+import { playMusic, stopMusic, toggleMusic } from "./tools/music-tool";
 
 const API_KEY = process.env.REACT_APP_GEMINI_API_KEY as string;
 if (typeof API_KEY !== "string") {
@@ -50,7 +54,6 @@ function App() {
   const [activeTalkingVideo, setActiveTalkingVideo] = useState(0);
   const endOfSpeechTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [disguisedImage, setDisguisedImage] = useState<string | null>(null);
-  const [editedImage, setEditedImage] = useState<string | null>(null);
   const [lastEditedImage, setLastEditedImage] = useState<string | null>(null);
   const [muted, setMuted] = useState(false);
   const [sidePanelOpen, setSidePanelOpen] = useState(false);
@@ -59,6 +62,7 @@ function App() {
   const webcam = useWebcam();
 
   const {
+    client,
     connected,
     connect,
     disconnect,
@@ -66,6 +70,110 @@ function App() {
     isInputFocused,
     volume,
   } = useLiveAPIContext();
+
+  // Centralized tool call handler
+  useEffect(() => {
+    const onToolCall = async (toolCall: LiveServerToolCall) => {
+      if (!toolCall.functionCalls) {
+        return;
+      }
+      console.log("App.tsx: Received tool call:", toolCall.functionCalls);
+
+      const functionResponses: FunctionResponse[] = [];
+
+      for (const fnCall of toolCall.functionCalls) {
+        let result: any = { result: "ok" };
+        // Default to WHEN_IDLE, override for image tools
+        let scheduling = FunctionResponseScheduling.WHEN_IDLE;
+
+        try {
+          switch (fnCall.name) {
+            case config.tools.disguise_camera_image.name:
+              console.log(
+                "App.tsx: Handling disguise_camera_image tool call",
+                fnCall.args
+              );
+              const imageUrl = await disguiseCameraImage(
+                fnCall.args?.disguise_character as string,
+                webcam,
+                config
+              );
+              setDisguisedImage(imageUrl);
+              setLastEditedImage(imageUrl);
+              // Interrupt to show the image immediately
+              scheduling = FunctionResponseScheduling.INTERRUPT;
+              break;
+
+            case config.tools.edit_image.name:
+              console.log(
+                "App.tsx: Handling edit_image tool call",
+                fnCall.args
+              );
+              if (!lastEditedImage) {
+                throw new Error("No image to edit.");
+              }
+              const editedImageUrl = await editImage(
+                fnCall.args?.prompt as string,
+                lastEditedImage,
+                config
+              );
+              setLastEditedImage(editedImageUrl);
+              // Interrupt to show the image immediately
+              scheduling = FunctionResponseScheduling.INTERRUPT;
+              break;
+
+            case config.tools.clearImage.name:
+              console.log("App.tsx: Handling clearImage tool call");
+              setDisguisedImage(null);
+              setLastEditedImage(null);
+              break;
+
+            case "play_music":
+              console.log("App.tsx: Handling play_music tool call", fnCall.args);
+              if (fnCall.args && typeof fnCall.args.prompt === "string") {
+                playMusic(
+                  fnCall.args.prompt,
+                  fnCall.args.modelName as string | undefined
+                );
+              }
+              break;
+
+            case "stop_music":
+              console.log("App.tsx: Handling stop_music tool call");
+              stopMusic();
+              break;
+
+            default:
+              console.warn(`Unknown tool call: ${fnCall.name}`);
+              result = { result: "error", error: "Unknown tool" };
+              break;
+          }
+        } catch (e: any) {
+          console.error(`Error executing tool ${fnCall.name}:`, e);
+          result = { result: "error", error: e.message || "Unknown error" };
+        }
+
+        functionResponses.push({
+          id: fnCall.id,
+          name: fnCall.name,
+          response: {
+            ...result,
+            scheduling,
+          },
+        });
+      }
+
+      if (functionResponses.length > 0) {
+        console.log("App.tsx: Sending tool responses:", functionResponses);
+        client.sendToolResponse({ functionResponses });
+      }
+    };
+
+    client.on("toolcall", onToolCall);
+    return () => {
+      client.off("toolcall", onToolCall);
+    };
+  }, [client, webcam, config, lastEditedImage]);
 
   useEffect(() => {
     if (volume > 0.1) {
@@ -84,7 +192,7 @@ function App() {
         }, (config as any).endOfSpeechGracePeriodMs || 2000);
       }
     }
-  }, [volume, isTalking]);
+  }, [volume, isTalking, config]);
 
   useEffect(() => {
     if (isTalking) {
@@ -93,14 +201,19 @@ function App() {
   }, [isTalking]);
 
   useEffect(() => {
-    if (config.autoStart && config.autoStart.enabled && !connected && !didAutoConnect) {
+    if (
+      config.autoStart &&
+      config.autoStart.enabled &&
+      !connected &&
+      !didAutoConnect
+    ) {
       setDidAutoConnect(true);
       connect();
       if (config.autoStart.withCamera) {
         webcam.start().then(setVideoStream);
       }
     }
-  }, [connect, webcam, setVideoStream, connected, didAutoConnect]);
+  }, [connect, webcam, setVideoStream, connected, didAutoConnect, config]);
 
   useEffect(() => {
     let timeoutId: NodeJS.Timeout;
@@ -147,18 +260,17 @@ function App() {
       } else if (event.key === "d") {
         setSidePanelOpen(!sidePanelOpen);
       } else if (event.key === "i") {
-        disguiseCameraImage(
-          "a fantasy character",
-          webcam,
+        // Kept for manual testing/debugging
+        disguiseCameraImage("a fantasy character", webcam, config).then(
           (image) => {
             setDisguisedImage(image);
             setLastEditedImage(image);
-          },
-          config
+          }
         );
       } else if (event.key === "m") {
         toggleMusic();
-      } else if (event.key === "Delete") {
+      } else if (event.key === "c") {
+        console.log("Clearing images");
         setDisguisedImage(null);
         setLastEditedImage(null);
       } else if (event.key.toLowerCase() === "v") {
@@ -175,23 +287,20 @@ function App() {
     connected,
     connect,
     disconnect,
+    muted,
     setMuted,
     webcam,
-    setDisguisedImage,
-    setLastEditedImage,
+    config,
     setShowVideo,
     isInputFocused,
     showVideo,
+    sidePanelOpen,
   ]);
 
   return (
     <div className="App">
       <div className="streaming-console">
         <SidePanel
-          disguisedImage={disguisedImage}
-          lastEditedImage={lastEditedImage}
-          setDisguisedImage={setDisguisedImage}
-          setLastEditedImage={setLastEditedImage}
           open={sidePanelOpen}
           onToggle={() => setSidePanelOpen(!sidePanelOpen)}
         />
