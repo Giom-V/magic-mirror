@@ -29,6 +29,7 @@ import {
   StartSensitivity,
   EndSensitivity,
   LiveServerToolCall,
+  Content,
 } from "@google/genai";
 import { playMusic, stopMusic } from "../tools/music-tool";
 import { AppConfig } from "../types";
@@ -70,8 +71,16 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
       }
     );
 
+    const modelId = appConfig.defaultModelId || "en-US";
+    const systemInstruction =
+      appConfig.systemInstructions?.[modelId] ||
+      appConfig.systemInstructions?.["en-US"];
+
     return {
       ...appConfig,
+      systemInstruction: {
+        parts: [{ text: systemInstruction }],
+      } as Content,
       responseModalities: [Modality.AUDIO],
       mediaResolution: MediaResolution.MEDIA_RESOLUTION_MEDIUM,
       realtimeInputConfig: {
@@ -147,7 +156,11 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
             case "play_music":
               console.log("Handling play_music tool call", fnCall.args);
               if (fnCall.args && typeof fnCall.args.prompt === "string") {
-                playMusic(fnCall.args.prompt, fnCall.args.modelName as string | undefined);
+                playMusic(
+                  fnCall.args.prompt,
+                  config,
+                  fnCall.args.modelName as string | undefined
+                );
               }
               break;
             case "stop_music":
