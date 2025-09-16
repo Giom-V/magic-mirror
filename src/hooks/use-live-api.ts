@@ -125,6 +125,9 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
   useEffect(() => {
     const onOpen = () => {
       setConnected(true);
+    };
+
+    const onSetupComplete = () => {
       if (config.introductoryMessage) {
         const lang = navigator.language;
         const message = lang.startsWith("fr")
@@ -173,6 +176,7 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
       .on("error", onError)
       .on("open", onOpen)
       .on("close", onClose)
+      .on("setupcomplete", onSetupComplete)
       .on("interrupted", stopAudioStreamer)
       .on("audio", onAudio)
       .on("toolcall", onToolCall);
@@ -182,6 +186,7 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
         .off("error", onError)
         .off("open", onOpen)
         .off("close", onClose)
+        .off("setupcomplete", onSetupComplete)
         .off("interrupted", stopAudioStreamer)
         .off("audio", onAudio)
         .off("toolcall", onToolCall)
