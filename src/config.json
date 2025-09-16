@@ -14,7 +14,7 @@
   },
   "introductoryMessage": {
     "en-US": "Hello, who are you and what can you do?",
-    "fr-FR": "Bonjour, qui es-tu et que sais-tu faire?"
+    "fr-FR": "Bonjour, Peux-tu me saluer, me dire que tu es un mirroir magique et me raconter ce que tu sais faire?"
   },
   "autoStart": {
     "enabled": true,
