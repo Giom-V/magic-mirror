@@ -31,6 +31,7 @@ export default function VoiceSelector() {
       setConfig({
         ...config,
         speechConfig: {
+          ...config.speechConfig,
           voiceConfig: {
             prebuiltVoiceConfig: {
               voiceName: voiceName,
