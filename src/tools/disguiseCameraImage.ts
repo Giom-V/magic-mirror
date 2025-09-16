@@ -21,7 +21,8 @@ export async function disguiseCameraImage(
   console.log("Using tool: disguise_camera_image");
   if (config.music?.accompany) {
     playMusic(
-      `a fairy tale music that would go with a picture of me as ${disguise_character}`
+      `a fairy tale music that would go with a picture of me as ${disguise_character}`,
+      config
     );
   }
   const stream = await webcam.start();

@@ -38,6 +38,8 @@ export type AppConfig = LiveConnectConfig & {
     accompany?: boolean;
   };
   disguisePromptTemplate?: string;
+  editImagePromptTemplate?: string;
+  musicPromptTemplate?: string;
 };
 
 /**

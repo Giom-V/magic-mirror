@@ -19,7 +19,10 @@ export async function editImage(
 ) {
   console.log("Using tool: editImage");
   if (config.music?.accompany) {
-    playMusic(`Alter the music to take into account that we're adding ${prompt}`);
+    playMusic(
+      `Alter the music to take into account that we're adding ${prompt}`,
+      config
+    );
   }
   const base64Data = image.split(",")[1];
 
@@ -30,7 +33,12 @@ export async function editImage(
 
   const response = await ai.models.generateContent({
     model: config.imageEditModel,
-    contents: [imagePart, prompt],
+    contents: [
+        imagePart,
+        (
+          config.editImagePromptTemplate || "Apply the following edit to the image: ${prompt}"
+        ).replace("${prompt}", prompt),
+      ],
   });
 
   if (

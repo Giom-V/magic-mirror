@@ -177,28 +177,35 @@ const musicPromptsSchema = {
     },
 };
 
-export async function playMusic(prompt: string, modelName: string = "gemini-2.5-flash-lite") {
+export async function playMusic(
+  prompt: string,
+  config: AppConfig,
+  modelName: string = "gemini-2.5-flash-lite"
+) {
   console.log(`Music tool called with prompt: "${prompt}" using model ${modelName}`);
 
   try {
     console.log("Generating musical prompts with Gemini...");
     const response = await genAI.models.generateContent({
-        model: modelName,
-        contents: [
-          {
-            parts: [
-              {
-                text: `Based on the following user request, generate a list of 2 to 5 diverse and creative musical prompts for a music generation model. The model has a vast knowledge of instruments, genres, and moods.
+      model: modelName,
+      contents: [
+        {
+          parts: [
+            {
+              text: (
+                config.musicPromptTemplate ||
+                `Based on the following user request, generate a list of 2 to 5 diverse and creative musical prompts for a music generation model. The model has a vast knowledge of instruments, genres, and moods.
 
 User request: "${prompt}"`
-              },
-            ],
-          },
-        ],
-        config: {
-          responseMimeType: "application/json",
-          responseSchema: musicPromptsSchema,
+              ).replace("${prompt}", prompt),
+            },
+          ],
         },
+      ],
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: musicPromptsSchema,
+      },
     });
 
     const responseText = response.text;
@@ -233,11 +240,11 @@ export function setMusicVolume(level: number) {
     lyriaClient.setVolume(level);
 }
 
-export function toggleMusic(prompt: string = "Piano") {
+export function toggleMusic(config: AppConfig, prompt: string = "Piano") {
     const lyriaClient = LyriaMusicClient.getInstance();
     if (lyriaClient.getIsPlaying()) {
         stopMusic();
     } else {
-        playMusic(prompt);
+        playMusic(prompt, config);
     }
 }
