@@ -103,6 +103,8 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
   const [connected, setConnected] = useState(false);
   const [volume, setVolume] = useState(0);
   const [isInputFocused, setInputFocused] = useState(false);
+  const configRef = useRef(config);
+  configRef.current = config;
 
   // register audio for streaming server -> speakers
   useEffect(() => {
@@ -157,13 +159,13 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
   }, [client]);
 
   const connect = useCallback(async () => {
-    if (!config) {
+    if (!configRef.current) {
       throw new Error("config has not been set");
     }
-    console.log("Connecting with config:", config);
+    console.log("Connecting with config:", configRef.current);
     client.disconnect();
-    await client.connect(model, config);
-  }, [client, config, model]);
+    await client.connect(model, configRef.current);
+  }, [client, model]);
 
   const disconnect = useCallback(async () => {
     client.disconnect();
