@@ -16,6 +16,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import appConfig from "../config.json";
+import { modelOptions } from "../models";
 import { GenAILiveClient } from "../lib/genai-live-client";
 import { LiveClientOptions } from "../types";
 import { AudioStreamer } from "../lib/audio-streamer";
@@ -68,7 +69,11 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
       }
     );
 
-    return {
+    const defaultModel =
+      modelOptions.find((opt) => opt.id === appConfig.defaultModelId) ||
+      modelOptions[0];
+
+    const initialConfig = {
       ...appConfig,
       responseModalities: [Modality.AUDIO],
       mediaResolution: MediaResolution.MEDIA_RESOLUTION_MEDIUM,
@@ -88,7 +93,7 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
       speechConfig: {
         voiceConfig: {
           prebuiltVoiceConfig: {
-            voiceName: "Aoede",
+            voiceName: "Puck",
           },
         },
       },
@@ -98,6 +103,15 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
           functionDeclarations,
         },
       ],
+    };
+
+    return {
+      ...initialConfig,
+      ...defaultModel.config,
+      speechConfig: {
+        ...initialConfig.speechConfig,
+        ...defaultModel.config.speechConfig,
+      },
     };
   });
   const [connected, setConnected] = useState(false);

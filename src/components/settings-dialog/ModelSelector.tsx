@@ -1,52 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Select from "react-select";
 import { useLiveAPIContext } from "../../contexts/LiveAPIContext";
-import { AppConfig } from "../../types";
-
-type ModelOption = {
-  id: string;
-  value: string;
-  label: string;
-  modelName: string;
-  config: Partial<AppConfig>;
-};
-
-const modelOptions: ModelOption[] = [
-  {
-    id: "proactive",
-    value: "proactive",
-    label: "Gemini 2.5 Flash (Proactive Audio)",
-    modelName: "gemini-2.5-flash-preview-native-audio-dialog",
-    config: {
-      proactivity: { proactiveAudio: true },
-      speechConfig: {},
-    },
-  },
-  {
-    id: "french",
-    value: "french",
-    label: "Gemini 2.5 Flash (French)",
-    modelName: "gemini-2.5-flash-live-preview",
-    config: {
-      proactivity: { proactiveAudio: false },
-      speechConfig: {
-        languageCode: "fr-FR",
-      },
-    },
-  },
-  {
-    id: "english",
-    value: "english",
-    label: "Gemini 2.5 Flash (English)",
-    modelName: "gemini-2.5-flash-live-preview",
-    config: {
-      proactivity: { proactiveAudio: false },
-      speechConfig: {
-        languageCode: "en-US",
-      },
-    },
-  },
-];
+import { modelOptions, ModelOption } from "../../models";
 
 export default function ModelSelector() {
   const { model, setModel, config, setConfig, restart, connected } =
@@ -68,12 +23,6 @@ export default function ModelSelector() {
     }
   }, [model]);
 
-  useEffect(() => {
-    if (selectedOption) {
-      updateModel(selectedOption);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   useEffect(() => {
     if (connected) {
