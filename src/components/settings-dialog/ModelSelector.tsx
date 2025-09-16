@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import Select from "react-select";
 import { useLiveAPIContext } from "../../contexts/LiveAPIContext";
 import { modelOptions, ModelOption } from "../../models";
+import { AppConfig } from "../../types";
 
 export default function ModelSelector() {
   const { model, setModel, config, setConfig, restart, connected } =
