@@ -267,10 +267,16 @@ function App() {
         );
       } else if (event.key === "m") {
         toggleMusic();
-      } else if (event.key === "c") {
+      } else if (event.key.toLowerCase() === "c") {
         console.log("Clearing images");
         setDisguisedImage(null);
         setLastEditedImage(null);
+        setShowVideo(true);
+      } else if (event.key === "Delete") {
+        console.log("Clearing images");
+        setDisguisedImage(null);
+        setLastEditedImage(null);
+        setShowVideo(true);
       } else if (event.key.toLowerCase() === "v") {
         setShowVideo(!showVideo);
       }
