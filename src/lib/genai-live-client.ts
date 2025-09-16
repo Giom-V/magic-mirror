@@ -25,11 +25,12 @@ import {
   LiveServerToolCallCancellation,
   Part,
   Session,
+  LiveConnectConfig,
 } from "@google/genai";
 
 import { EventEmitter } from "eventemitter3";
 import { difference } from "lodash";
-import { AppConfig, LiveClientOptions, StreamingLog } from "../types";
+import { LiveClientOptions, StreamingLog } from "../types";
 import { base64ToArrayBuffer } from "./utils";
 
 /**
@@ -86,7 +87,7 @@ export class GenAILiveClient extends EventEmitter<LiveClientEventTypes> {
     return this._model;
   }
 
-  protected config: AppConfig | null = null;
+  protected config: LiveConnectConfig | null = null;
 
   public getConfig() {
     return { ...this.config };
@@ -113,7 +114,10 @@ export class GenAILiveClient extends EventEmitter<LiveClientEventTypes> {
     this.emit("log", log);
   }
 
-  async connect(model: string, config: AppConfig): Promise<boolean> {
+  async connect(
+    model: string,
+    config: LiveConnectConfig
+  ): Promise<boolean> {
     if (!this.client) {
       return false;
     }
@@ -133,6 +137,10 @@ export class GenAILiveClient extends EventEmitter<LiveClientEventTypes> {
     };
 
     try {
+      console.log(
+        "Connecting to GenAI Live with config:",
+        JSON.stringify(config, null, 2)
+      );
       this._session = await this.client.live.connect({
         model,
         config,

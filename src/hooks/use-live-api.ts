@@ -16,6 +16,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import appConfig from "../config.json";
+import { modelOptions } from "../models";
 import { GenAILiveClient } from "../lib/genai-live-client";
 import { LiveClientOptions } from "../types";
 import { AudioStreamer } from "../lib/audio-streamer";
@@ -68,7 +69,11 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
       }
     );
 
-    return {
+    const defaultModel =
+      modelOptions.find((opt) => opt.id === appConfig.defaultModelId) ||
+      modelOptions[0];
+
+    const initialConfig = {
       ...appConfig,
       responseModalities: [Modality.AUDIO],
       mediaResolution: MediaResolution.MEDIA_RESOLUTION_MEDIUM,
@@ -88,7 +93,7 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
       speechConfig: {
         voiceConfig: {
           prebuiltVoiceConfig: {
-            voiceName: "Aoede",
+            voiceName: "Puck",
           },
         },
       },
@@ -99,10 +104,21 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
         },
       ],
     };
+
+    return {
+      ...initialConfig,
+      ...defaultModel.config,
+      speechConfig: {
+        ...initialConfig.speechConfig,
+        ...defaultModel.config.speechConfig,
+      },
+    };
   });
   const [connected, setConnected] = useState(false);
   const [volume, setVolume] = useState(0);
   const [isInputFocused, setInputFocused] = useState(false);
+  const configRef = useRef(config);
+  configRef.current = config;
 
   // register audio for streaming server -> speakers
   useEffect(() => {
@@ -172,13 +188,39 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
   }, [client, config]);
 
   const connect = useCallback(async () => {
-    if (!config) {
+    const appConfig = configRef.current;
+    if (!appConfig) {
       throw new Error("config has not been set");
     }
-    console.log("Connecting with config:", config);
+
+    const languageCode = appConfig.speechConfig?.languageCode || "en-US";
+    const systemInstructionText =
+      appConfig.systemInstructions?.[languageCode] ||
+      appConfig.systemInstructions?.["en-US"] ||
+      "";
+
+    const liveConnectConfig = {
+      responseModalities: appConfig.responseModalities,
+      mediaResolution: appConfig.mediaResolution,
+      realtimeInputConfig: appConfig.realtimeInputConfig,
+      contextWindowCompression: appConfig.contextWindowCompression,
+      tools: appConfig.tools,
+      speechConfig: {
+        ...appConfig.speechConfig,
+        languageCode: languageCode,
+      },
+      systemInstruction: {
+        parts: [{ text: systemInstructionText }],
+      },
+    };
+
+    console.log(
+      "Connecting to GenAI Live with config:",
+      JSON.stringify(liveConnectConfig, null, 2)
+    );
     client.disconnect();
-    await client.connect(model, config);
-  }, [client, config, model]);
+    await client.connect(model, liveConnectConfig);
+  }, [client, model]);
 
   const disconnect = useCallback(async () => {
     client.disconnect();
