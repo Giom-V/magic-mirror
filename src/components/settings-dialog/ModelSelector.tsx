@@ -92,16 +92,6 @@ export default function ModelSelector() {
           ...config.speechConfig,
           ...option.config.speechConfig,
         },
-        systemInstruction: {
-          parts: [
-            {
-              text:
-                config.systemInstructions?.[
-                  option.config.speechConfig?.languageCode || "en-US"
-                ] || "",
-            },
-          ],
-        },
       };
       setConfig(newConfig);
     },

@@ -159,12 +159,38 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
   }, [client]);
 
   const connect = useCallback(async () => {
-    if (!configRef.current) {
+    const appConfig = configRef.current;
+    if (!appConfig) {
       throw new Error("config has not been set");
     }
-    console.log("Connecting with config:", configRef.current);
+
+    const languageCode = appConfig.speechConfig?.languageCode || "en-US";
+    const systemInstructionText =
+      appConfig.systemInstructions?.[languageCode] ||
+      appConfig.systemInstructions?.["en-US"] ||
+      "";
+
+    const liveConnectConfig = {
+      responseModalities: appConfig.responseModalities,
+      mediaResolution: appConfig.mediaResolution,
+      realtimeInputConfig: appConfig.realtimeInputConfig,
+      contextWindowCompression: appConfig.contextWindowCompression,
+      tools: appConfig.tools,
+      speechConfig: {
+        ...appConfig.speechConfig,
+        languageCode: languageCode,
+      },
+      systemInstruction: {
+        parts: [{ text: systemInstructionText }],
+      },
+    };
+
+    console.log(
+      "Connecting to GenAI Live with config:",
+      JSON.stringify(liveConnectConfig, null, 2)
+    );
     client.disconnect();
-    await client.connect(model, configRef.current);
+    await client.connect(model, liveConnectConfig);
   }, [client, model]);
 
   const disconnect = useCallback(async () => {
