@@ -125,6 +125,19 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
       setConnected(true);
     };
 
+    const onSetupComplete = () => {
+      if (config.introductoryMessage) {
+        const lang = navigator.language;
+        const message = lang.startsWith("fr")
+          ? config.introductoryMessage["fr-FR"]
+          : config.introductoryMessage["en-US"];
+
+        if (message) {
+          client.send({ text: message });
+        }
+      }
+    };
+
     const onClose = () => {
       setConnected(false);
     };
@@ -142,6 +155,7 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
       .on("error", onError)
       .on("open", onOpen)
       .on("close", onClose)
+      .on("setupcomplete", onSetupComplete)
       .on("interrupted", stopAudioStreamer)
       .on("audio", onAudio);
 
@@ -150,11 +164,12 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
         .off("error", onError)
         .off("open", onOpen)
         .off("close", onClose)
+        .off("setupcomplete", onSetupComplete)
         .off("interrupted", stopAudioStreamer)
         .off("audio", onAudio)
         .disconnect();
     };
-  }, [client]);
+  }, [client, config]);
 
   const connect = useCallback(async () => {
     if (!config) {
