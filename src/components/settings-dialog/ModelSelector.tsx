@@ -1,55 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
 import Select from "react-select";
 import { useLiveAPIContext } from "../../contexts/LiveAPIContext";
+import { modelOptions, ModelOption } from "../../models";
 import { AppConfig } from "../../types";
 
-type ModelOption = {
-  id: string;
-  value: string;
-  label: string;
-  modelName: string;
-  config: Partial<AppConfig>;
-};
-
-const modelOptions: ModelOption[] = [
-  {
-    id: "proactive",
-    value: "proactive",
-    label: "Gemini 2.5 Flash (Proactive Audio)",
-    modelName: "gemini-2.5-flash-preview-native-audio-dialog",
-    config: {
-      proactivity: { proactiveAudio: true },
-      speechConfig: {},
-    },
-  },
-  {
-    id: "french",
-    value: "french",
-    label: "Gemini 2.5 Flash (French)",
-    modelName: "gemini-2.5-flash-live-preview",
-    config: {
-      proactivity: { proactiveAudio: false },
-      speechConfig: {
-        languageCode: "fr-FR",
-      },
-    },
-  },
-  {
-    id: "english",
-    value: "english",
-    label: "Gemini 2.5 Flash (English)",
-    modelName: "gemini-2.5-flash-live-preview",
-    config: {
-      proactivity: { proactiveAudio: false },
-      speechConfig: {
-        languageCode: "en-US",
-      },
-    },
-  },
-];
-
 export default function ModelSelector() {
-  const { model, setModel, config, setConfig } = useLiveAPIContext();
+  const { model, setModel, config, setConfig, restart, connected } =
+    useLiveAPIContext();
 
   const [selectedOption, setSelectedOption] = useState<ModelOption | null>(
     () => {
@@ -67,12 +24,13 @@ export default function ModelSelector() {
     }
   }, [model]);
 
+
   useEffect(() => {
-    if (selectedOption) {
-      updateModel(selectedOption);
+    if (connected) {
+      restart();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [model]);
 
   const updateModel = useCallback(
     (option: ModelOption) => {
@@ -84,10 +42,6 @@ export default function ModelSelector() {
           ...config.speechConfig,
           ...option.config.speechConfig,
         },
-        systemInstruction:
-          config.systemInstructions?.[
-            option.config.speechConfig?.languageCode || "en-US"
-          ] || "",
       };
       setConfig(newConfig);
     },

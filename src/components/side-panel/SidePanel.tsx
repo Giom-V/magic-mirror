@@ -15,19 +15,14 @@
  */
 
 import "./react-select.scss";
-import config from "../../config.json";
 import cn from "classnames";
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState } from "react";
 import { RiSidebarFoldLine, RiSidebarUnfoldLine } from "react-icons/ri";
 import Select from "react-select";
 import { useLiveAPIContext } from "../../contexts/LiveAPIContext";
 import { useLoggerStore } from "../../lib/store-logger";
 import Logger, { LoggerFilterType } from "../logger/Logger";
 import "./side-panel.scss";
-import { useWebcam } from "../../hooks/use-webcam";
-import { LiveServerToolCall } from "@google/genai";
-import { disguiseCameraImage } from "../../tools/disguiseCameraImage";
-import { editImage } from "../../tools/editImage";
 
 const filterOptions = [
   { value: "conversations", label: "Conversations" },
@@ -36,21 +31,13 @@ const filterOptions = [
 ];
 
 export default function SidePanel({
-  disguisedImage,
-  lastEditedImage,
-  setDisguisedImage,
-  setLastEditedImage,
   open,
   onToggle,
 }: {
-  disguisedImage: string | null;
-  lastEditedImage: string | null;
-  setDisguisedImage: (image: string | null) => void;
-  setLastEditedImage: (image: string | null) => void;
   open: boolean;
   onToggle: () => void;
 }) {
-  const { connected, client, config: liveConfig } = useLiveAPIContext();
+  const { connected, client } = useLiveAPIContext();
   const loggerRef = useRef<HTMLDivElement>(null);
   const loggerLastHeightRef = useRef<number>(-1);
   const { log, logs } = useLoggerStore();
@@ -61,7 +48,6 @@ export default function SidePanel({
     label: string;
   } | null>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  const webcam = useWebcam();
 
   //scroll the log to the bottom when new logs come in
   useEffect(() => {
@@ -82,78 +68,6 @@ export default function SidePanel({
       client.off("log", log);
     };
   }, [client, log]);
-
-  useEffect(() => {
-    const onToolCall = (toolCall: LiveServerToolCall) => {
-      if (!toolCall.functionCalls) {
-        return;
-      }
-
-      const editCall = toolCall.functionCalls.find(
-        (fc) => fc.name === config.tools.disguise_camera_image.name
-      );
-      if (editCall) {
-        if (editCall.args && editCall.args.disguise_character) {
-          disguiseCameraImage(
-            editCall.args.disguise_character as string,
-            webcam,
-            (image) => {
-              setDisguisedImage(image);
-              setLastEditedImage(image);
-            },
-            liveConfig
-          );
-        } else {
-          console.error("disguise_character argument not found in tool call");
-        }
-      }
-
-      const clearCall = toolCall.functionCalls.find(
-        (fc) => fc.name === config.tools.clearImage.name
-      );
-      if (clearCall) {
-        setDisguisedImage(null);
-        setLastEditedImage(null);
-      }
-      const editImageCall = toolCall.functionCalls.find(
-        (fc) => fc.name === config.tools.edit_image.name
-      );
-
-      if (editImageCall) {
-        if (editImageCall.args && editImageCall.args.prompt && lastEditedImage) {
-          editImage(
-            editImageCall.args.prompt as string,
-            lastEditedImage,
-            setLastEditedImage,
-            liveConfig
-          );
-        } else {
-          console.error("prompt or image not found in tool call");
-        }
-      }
-    };
-
-    client.on("toolcall", onToolCall);
-    return () => {
-      client.off("toolcall", onToolCall);
-    };
-  }, [client, webcam, setDisguisedImage, setLastEditedImage, lastEditedImage, disguisedImage, liveConfig]);
-
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "c") {
-        console.log("Using tool: clear_image_display");
-        setDisguisedImage(null);
-        setLastEditedImage(null);
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [setDisguisedImage, setLastEditedImage]);
 
   const handleSubmit = () => {
     client.send([{ text: textInput }]);

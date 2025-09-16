@@ -28,7 +28,6 @@ import {
   MediaResolution,
   StartSensitivity,
   EndSensitivity,
-  LiveServerToolCall,
 } from "@google/genai";
 import { AppConfig } from "../types";
 import { playMusic, stopMusic } from "../tools/music-tool";
@@ -142,6 +141,19 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
       setConnected(true);
     };
 
+    const onSetupComplete = () => {
+      if (config.introductoryMessage) {
+        const lang = navigator.language;
+        const message = lang.startsWith("fr")
+          ? config.introductoryMessage["fr-FR"]
+          : config.introductoryMessage["en-US"];
+
+        if (message) {
+          client.send({ text: message });
+        }
+      }
+    };
+
     const onClose = () => {
       setConnected(false);
     };
@@ -182,21 +194,21 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
       .on("error", onError)
       .on("open", onOpen)
       .on("close", onClose)
+      .on("setupcomplete", onSetupComplete)
       .on("interrupted", stopAudioStreamer)
-      .on("audio", onAudio)
-      .on("toolcall", onToolCall);
+      .on("audio", onAudio);
 
     return () => {
       client
         .off("error", onError)
         .off("open", onOpen)
         .off("close", onClose)
+        .off("setupcomplete", onSetupComplete)
         .off("interrupted", stopAudioStreamer)
         .off("audio", onAudio)
-        .off("toolcall", onToolCall)
         .disconnect();
     };
-  }, [client]);
+  }, [client, config]);
 
   const connect = useCallback(async () => {
     const appConfig = configRef.current;
