@@ -49,7 +49,8 @@ const modelOptions: ModelOption[] = [
 ];
 
 export default function ModelSelector() {
-  const { model, setModel, config, setConfig, restart } = useLiveAPIContext();
+  const { model, setModel, config, setConfig, restart, connected } =
+    useLiveAPIContext();
 
   const [selectedOption, setSelectedOption] = useState<ModelOption | null>(
     () => {
@@ -69,13 +70,20 @@ export default function ModelSelector() {
 
   useEffect(() => {
     if (selectedOption) {
-      updateModel(selectedOption, false);
+      updateModel(selectedOption);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    if (connected) {
+      restart();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [model]);
+
   const updateModel = useCallback(
-    (option: ModelOption, restartOnUpdate: boolean) => {
+    (option: ModelOption) => {
       setModel(option.modelName);
       const newConfig: AppConfig = {
         ...config,
@@ -90,12 +98,8 @@ export default function ModelSelector() {
           ] || "",
       };
       setConfig(newConfig);
-
-      if (restartOnUpdate) {
-        restart();
-      }
     },
-    [config, setConfig, setModel, restart]
+    [config, setConfig, setModel]
   );
 
   return (
@@ -129,7 +133,7 @@ export default function ModelSelector() {
         onChange={(e) => {
           if (e) {
             setSelectedOption(e);
-            updateModel(e, true);
+            updateModel(e);
           }
         }}
       />
