@@ -267,7 +267,7 @@ function App() {
           }
         );
       } else if (event.key === "m") {
-        toggleMusic();
+        toggleMusic(config);
       } else if (event.key.toLowerCase() === "c") {
         console.log("Clearing images");
         setDisguisedImage(null);

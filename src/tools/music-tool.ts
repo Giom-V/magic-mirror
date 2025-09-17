@@ -6,7 +6,6 @@ import {
   WeightedPrompt,
 } from '@google/genai';
 import { AppConfig } from '../types';
-import appConfig from '../config.json';
 
 const API_KEY = process.env.REACT_APP_GEMINI_API_KEY as string;
 
@@ -239,11 +238,11 @@ export function setMusicVolume(level: number) {
     lyriaClient.setVolume(level);
 }
 
-export function toggleMusic(prompt: string = "Piano") {
+export function toggleMusic(config: AppConfig, prompt: string = "Piano") {
     const lyriaClient = LyriaMusicClient.getInstance();
     if (lyriaClient.getIsPlaying()) {
         stopMusic();
     } else {
-        playMusic(prompt, appConfig);
+        playMusic(prompt, config);
     }
 }
