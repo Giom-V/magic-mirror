@@ -24,8 +24,10 @@ import MagicEffect from "./components/magic-effect/MagicEffect";
 import cn from "classnames";
 import { LiveClientOptions } from "./types";
 import {
+  Chat,
   FunctionResponse,
   FunctionResponseScheduling,
+  GoogleGenAI,
   LiveServerToolCall,
 } from "@google/genai";
 import { disguiseCameraImage } from "./tools/disguiseCameraImage";
@@ -53,6 +55,8 @@ function App() {
   const endOfSpeechTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [disguisedImage, setDisguisedImage] = useState<string | null>(null);
   const [lastEditedImage, setLastEditedImage] = useState<string | null>(null);
+  const [imageChat, setImageChat] = useState<Chat | null>(null);
+  const [aiClient, setAiClient] = useState<GoogleGenAI | null>(null);
   const [muted, setMuted] = useState(false);
   const [sidePanelOpen, setSidePanelOpen] = useState(false);
   const [controlsVisible, setControlsVisible] = useState(true);
@@ -68,6 +72,12 @@ function App() {
     isInputFocused,
     volume,
   } = useLiveAPIContext();
+
+  useEffect(() => {
+    if (API_KEY) {
+      setAiClient(new GoogleGenAI({ apiKey: API_KEY }));
+    }
+  }, []);
 
   // Centralized tool call handler
   useEffect(() => {
@@ -91,10 +101,15 @@ function App() {
                 "App.tsx: Handling disguise_camera_image tool call",
                 fnCall.args
               );
+              if (!aiClient) {
+                throw new Error("AI client not initialized.");
+              }
               const imageUrl = await disguiseCameraImage(
                 fnCall.args?.disguise_character as string,
                 webcam,
-                config
+                config,
+                aiClient,
+                setImageChat
               );
               setDisguisedImage(imageUrl);
               setLastEditedImage(imageUrl);
@@ -107,12 +122,12 @@ function App() {
                 "App.tsx: Handling edit_image tool call",
                 fnCall.args
               );
-              if (!lastEditedImage) {
-                throw new Error("No image to edit.");
+              if (!imageChat) {
+                throw new Error("No image chat available.");
               }
               const editedImageUrl = await editImage(
                 fnCall.args?.prompt as string,
-                lastEditedImage,
+                imageChat,
                 config
               );
               setLastEditedImage(editedImageUrl);
@@ -124,6 +139,7 @@ function App() {
               console.log("App.tsx: Handling clearImage tool call");
               setDisguisedImage(null);
               setLastEditedImage(null);
+              setImageChat(null);
               break;
 
             case "play_music":
@@ -172,7 +188,7 @@ function App() {
     return () => {
       client.off("toolcall", onToolCall);
     };
-  }, [client, webcam, config, lastEditedImage]);
+  }, [client, webcam, config, lastEditedImage, aiClient, imageChat]);
 
   useEffect(() => {
     if (volume > 0.1) {
@@ -259,13 +275,21 @@ function App() {
       } else if (event.key === "d") {
         setSidePanelOpen(!sidePanelOpen);
       } else if (event.key === "i") {
+        if (!aiClient) {
+          console.error("AI client not initialized.");
+          return;
+        }
         // Kept for manual testing/debugging
-        disguiseCameraImage("a fantasy character", webcam, config).then(
-          (image) => {
-            setDisguisedImage(image);
-            setLastEditedImage(image);
-          }
-        );
+        disguiseCameraImage(
+          "a fantasy character",
+          webcam,
+          config,
+          aiClient,
+          setImageChat
+        ).then((image) => {
+          setDisguisedImage(image);
+          setLastEditedImage(image);
+        });
       } else if (event.key === "m") {
         toggleMusic(config);
       } else if (event.key.toLowerCase() === "c") {

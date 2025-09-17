@@ -1,26 +1,14 @@
-import { GoogleGenAI, Part } from "@google/genai";
+import { Chat } from "@google/genai";
 import { AppConfig } from "../types";
 import { playMusic } from "./music-tool";
 
-function fileToGenerativePart(data: string, mimeType: string): Part {
-  return {
-    inlineData: {
-      data,
-      mimeType,
-    },
-  };
-}
-
 export function editImage(
   prompt: string,
-  image: string,
+  chat: Chat,
   config: AppConfig
 ): Promise<string> {
   return new Promise(async (resolve, reject) => {
     console.log(`Using tool: editImage with prompt: ${prompt}`);
-    if (!image) {
-      return reject("No image provided to edit");
-    }
     if (config.music?.accompany) {
       const musicPrompt = config.editImageMusicPromptTemplate.replace(
         "${prompt}",
@@ -28,21 +16,11 @@ export function editImage(
       );
       playMusic(musicPrompt, config);
     }
-    const base64Data = image.split(",")[1];
 
     try {
-      const ai = new GoogleGenAI({
-        apiKey: process.env.REACT_APP_GEMINI_API_KEY as string,
-      });
-      const imagePart = fileToGenerativePart(base64Data, "image/jpeg");
-
       console.log("editImage: Sending image to model for editing...");
-      const response = await ai.models.generateContent({
-        model: config.imageEditModel,
-        contents: [
-          imagePart,
-          config.editImagePromptTemplate.replace("${prompt}", prompt),
-        ],
+      const response = await chat.sendMessage({
+        message: config.editImagePromptTemplate.replace("${prompt}", prompt),
       });
 
       if (
@@ -62,7 +40,9 @@ export function editImage(
         }
       }
 
-      console.error("editImage: Image editing failed, no image data in response.");
+      console.error(
+        "editImage: Image editing failed, no image data in response."
+      );
       reject("No image data in response");
     } catch (error) {
       console.error("editImage: Error in edit process:", error);

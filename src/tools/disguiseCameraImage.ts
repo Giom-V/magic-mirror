@@ -1,4 +1,4 @@
-import { GoogleGenAI, Part } from "@google/genai";
+import { Chat, GoogleGenAI, Part } from "@google/genai";
 import { UseMediaStreamResult } from "../hooks/use-media-stream-mux";
 import { AppConfig } from "../types";
 import { playMusic } from "./music-tool";
@@ -15,7 +15,9 @@ function fileToGenerativePart(data: string, mimeType: string): Part {
 export function disguiseCameraImage(
   disguise_character: string,
   webcam: UseMediaStreamResult,
-  config: AppConfig
+  config: AppConfig,
+  ai: GoogleGenAI,
+  onChatCreated: (chat: Chat) => void
 ): Promise<string> {
   return new Promise(async (resolve, reject) => {
     console.log(
@@ -57,15 +59,18 @@ export function disguiseCameraImage(
         const dataUrl = canvas.toDataURL("image/jpeg");
         const base64Data = dataUrl.split(",")[1];
 
-        console.log("disguiseCameraImage: Sending image to model for editing...");
-        const ai = new GoogleGenAI({
-          apiKey: process.env.REACT_APP_GEMINI_API_KEY as string,
-        });
+        console.log(
+          "disguiseCameraImage: Sending image to model for editing..."
+        );
         const imagePart = fileToGenerativePart(base64Data, "image/jpeg");
 
-        const response = await ai.models.generateContent({
+        const chat = ai.chats.create({
           model: config.imageEditModel,
-          contents: [
+        });
+        onChatCreated(chat);
+
+        const response = await chat.sendMessage({
+          message: [
             imagePart,
             config.disguisePromptTemplate.replace(
               "${disguise_character}",
