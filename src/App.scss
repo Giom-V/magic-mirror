@@ -214,3 +214,14 @@ body {
 .control-tray-container.visible {
   opacity: 1;
 }
+
+.debug-timer {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  background-color: white;
+  color: black;
+  padding: 10px;
+  border: 1px solid black;
+  z-index: 1000;
+}
