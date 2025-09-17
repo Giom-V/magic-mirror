@@ -19,9 +19,9 @@ export function editImage(
 
     try {
       console.log("editImage: Sending image to model for editing...");
-      const response = await chat.sendMessage({
-        contents: [config.editImagePromptTemplate.replace("${prompt}", prompt)],
-      });
+      const response = await chat.sendMessage(
+        config.editImagePromptTemplate.replace("${prompt}", prompt)
+      );
 
       if (
         response.candidates &&

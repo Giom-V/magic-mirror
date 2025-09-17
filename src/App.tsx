@@ -75,7 +75,7 @@ function App() {
 
   useEffect(() => {
     if (API_KEY) {
-      setAiClient(new GoogleGenAI(API_KEY));
+      setAiClient(new GoogleGenAI({ apiKey: API_KEY }));
     }
   }, []);
 

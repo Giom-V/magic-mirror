@@ -69,15 +69,15 @@ export function disguiseCameraImage(
         });
         onChatCreated(chat);
 
-        const response = await chat.sendMessage({
-          contents: [
+        const response = await chat.sendMessage(
+          [
             imagePart,
             config.disguisePromptTemplate.replace(
               "${disguise_character}",
               disguise_character
             ),
-          ],
-        });
+          ]
+        );
 
         if (
           response.candidates &&
