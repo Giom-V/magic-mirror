@@ -22,9 +22,11 @@ export function disguiseCameraImage(
       `Using tool: disguise_camera_image with character: ${disguise_character}`
     );
     if (config.music?.accompany) {
-      playMusic(
-        `a fairy tale music that would go with a picture of me as ${disguise_character}`
+      const musicPrompt = config.disguiseMusicPromptTemplate.replace(
+        "${disguise_character}",
+        disguise_character
       );
+      playMusic(musicPrompt, config);
     }
     try {
       const stream = await webcam.start();
@@ -65,7 +67,10 @@ export function disguiseCameraImage(
           model: config.imageEditModel,
           contents: [
             imagePart,
-            `transform me into ${disguise_character}. Also feel free to slightly change the background for a more dreamy one.`,
+            config.disguisePromptTemplate.replace(
+              "${disguise_character}",
+              disguise_character
+            ),
           ],
         });
 

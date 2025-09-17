@@ -5,6 +5,8 @@ import {
   Type,
   WeightedPrompt,
 } from '@google/genai';
+import { AppConfig } from '../types';
+import appConfig from '../config.json';
 
 const API_KEY = process.env.REACT_APP_GEMINI_API_KEY as string;
 
@@ -177,28 +179,32 @@ const musicPromptsSchema = {
     },
 };
 
-export async function playMusic(prompt: string, modelName: string = "gemini-2.5-flash-lite") {
-  console.log(`Music tool called with prompt: "${prompt}" using model ${modelName}`);
+export async function playMusic(
+  prompt: string,
+  config: AppConfig,
+  modelName: string = "gemini-2.5-flash-lite"
+) {
+  console.log(
+    `Music tool called with prompt: "${prompt}" using model ${modelName}`
+  );
 
   try {
     console.log("Generating musical prompts with Gemini...");
     const response = await genAI.models.generateContent({
-        model: modelName,
-        contents: [
-          {
-            parts: [
-              {
-                text: `Based on the following user request, generate a list of 2 to 5 diverse and creative musical prompts for a music generation model. The model has a vast knowledge of instruments, genres, and moods.
-
-User request: "${prompt}"`
-              },
-            ],
-          },
-        ],
-        config: {
-          responseMimeType: "application/json",
-          responseSchema: musicPromptsSchema,
+      model: modelName,
+      contents: [
+        {
+          parts: [
+            {
+              text: config.musicPromptTemplate.replace("${prompt}", prompt),
+            },
+          ],
         },
+      ],
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: musicPromptsSchema,
+      },
     });
 
     const responseText = response.text;
@@ -238,6 +244,6 @@ export function toggleMusic(prompt: string = "Piano") {
     if (lyriaClient.getIsPlaying()) {
         stopMusic();
     } else {
-        playMusic(prompt);
+        playMusic(prompt, appConfig);
     }
 }

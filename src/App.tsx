@@ -131,6 +131,7 @@ function App() {
               if (fnCall.args && typeof fnCall.args.prompt === "string") {
                 playMusic(
                   fnCall.args.prompt,
+                  config,
                   fnCall.args.modelName as string | undefined
                 );
               }
