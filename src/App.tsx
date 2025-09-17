@@ -131,6 +131,7 @@ function App() {
               if (fnCall.args && typeof fnCall.args.prompt === "string") {
                 playMusic(
                   fnCall.args.prompt,
+                  config,
                   fnCall.args.modelName as string | undefined
                 );
               }
@@ -266,7 +267,7 @@ function App() {
           }
         );
       } else if (event.key === "m") {
-        toggleMusic();
+        toggleMusic(config);
       } else if (event.key.toLowerCase() === "c") {
         console.log("Clearing images");
         setDisguisedImage(null);

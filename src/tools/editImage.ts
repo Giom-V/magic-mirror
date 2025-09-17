@@ -22,9 +22,11 @@ export function editImage(
       return reject("No image provided to edit");
     }
     if (config.music?.accompany) {
-      playMusic(
-        `Alter the music to take into account that we're adding ${prompt}`
+      const musicPrompt = config.editImageMusicPromptTemplate.replace(
+        "${prompt}",
+        prompt
       );
+      playMusic(musicPrompt, config);
     }
     const base64Data = image.split(",")[1];
 
@@ -37,7 +39,10 @@ export function editImage(
       console.log("editImage: Sending image to model for editing...");
       const response = await ai.models.generateContent({
         model: config.imageEditModel,
-        contents: [imagePart, prompt],
+        contents: [
+          imagePart,
+          config.editImagePromptTemplate.replace("${prompt}", prompt),
+        ],
       });
 
       if (

@@ -26,6 +26,11 @@ export type AppConfig = LiveConnectConfig & {
   liveModel: string;
   defaultModelId?: string;
   imageEditModel: string;
+  disguisePromptTemplate: string;
+  editImagePromptTemplate: string;
+  musicPromptTemplate: string;
+  disguiseMusicPromptTemplate: string;
+  editImageMusicPromptTemplate: string;
   systemInstructions?: { [key: string]: string };
   introductoryMessage?: { [key: string]: string };
   camera?: {
