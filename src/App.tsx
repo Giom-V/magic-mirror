@@ -50,6 +50,7 @@ function App() {
   // either the screen capture, the video or null, if null we hide it
   const [videoStream, setVideoStream] = useState<MediaStream | null>(null);
   const [showVideo, setShowVideo] = useState(true);
+  const [showCamera, setShowCamera] = useState(false);
   const [isTalking, setIsTalking] = useState(false);
   const [activeTalkingVideo, setActiveTalkingVideo] = useState(0);
   const endOfSpeechTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -62,6 +63,7 @@ function App() {
   const [controlsVisible, setControlsVisible] = useState(true);
   const [didAutoConnect, setDidAutoConnect] = useState(false);
   const webcam = useWebcam();
+  const prevConnected = useRef(false);
 
   const {
     client,
@@ -224,11 +226,24 @@ function App() {
     ) {
       setDidAutoConnect(true);
       connect();
-      if (config.autoStart.withCamera) {
+    }
+
+    if (connected && !prevConnected.current) {
+      if (config.autoStart?.withCamera) {
         webcam.start().then(setVideoStream);
       }
     }
-  }, [connect, webcam, setVideoStream, connected, didAutoConnect, config]);
+
+    prevConnected.current = connected;
+  }, [
+    connect,
+    webcam,
+    setVideoStream,
+    connected,
+    didAutoConnect,
+    config,
+    prevConnected,
+  ]);
 
   useEffect(() => {
     let timeoutId: NodeJS.Timeout;
@@ -303,7 +318,7 @@ function App() {
         setLastEditedImage(null);
         setShowVideo(true);
       } else if (event.key.toLowerCase() === "v") {
-        setShowVideo(!showVideo);
+        setShowCamera(!showCamera);
       }
     };
 
@@ -324,6 +339,8 @@ function App() {
     isInputFocused,
     showVideo,
     sidePanelOpen,
+    showCamera,
+    setShowCamera,
   ]);
 
   return (
@@ -389,7 +406,7 @@ function App() {
             })()}
             <video
               className={cn("stream", {
-                hidden: !videoRef.current || !videoStream,
+                hidden: !showCamera || !videoRef.current || !videoStream,
               })}
               ref={videoRef}
               autoPlay
