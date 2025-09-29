@@ -164,8 +164,8 @@ function App() {
               );
               setStoryImage(storyImageUrl);
               setLastEditedImage(storyImageUrl);
-              // Interrupt to show the image immediately
-              scheduling = FunctionResponseScheduling.INTERRUPT;
+              // Run tool in the background without interrupting speech
+              scheduling = FunctionResponseScheduling.SILENT;
               break;
 
             case "play_music":
@@ -177,6 +177,8 @@ function App() {
                   fnCall.args.modelName as string | undefined
                 );
               }
+              // Run tool in the background without interrupting speech
+              scheduling = FunctionResponseScheduling.SILENT;
               break;
 
             case "stop_music":
