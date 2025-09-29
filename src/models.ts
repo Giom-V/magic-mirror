@@ -12,7 +12,7 @@ export const modelOptions: ModelOption[] = [
   {
     id: "proactive-french",
     value: "proactive-french",
-    label: "Gemini 2.5 Flash (Proactive, French)",
+    label: "2.5 proactive French",
     modelName: "gemini-2.5-flash-native-audio-preview-09-2025",
     config: {
       proactivity: { proactiveAudio: true },
@@ -24,7 +24,7 @@ export const modelOptions: ModelOption[] = [
   {
     id: "proactive-english",
     value: "proactive-english",
-    label: "Gemini 2.5 Flash (Proactive, English)",
+    label: "2.5 proactive English",
     modelName: "gemini-2.5-flash-native-audio-preview-09-2025",
     config: {
       proactivity: { proactiveAudio: true },
@@ -36,7 +36,7 @@ export const modelOptions: ModelOption[] = [
   {
     id: "french",
     value: "french",
-    label: "Gemini 2.5 Flash (French)",
+    label: "2.5 flash French",
     modelName: "gemini-2.5-flash-live-preview",
     config: {
       proactivity: { proactiveAudio: false },
@@ -48,7 +48,7 @@ export const modelOptions: ModelOption[] = [
   {
     id: "english",
     value: "english",
-    label: "Gemini 2.5 Flash (English)",
+    label: "2.5 flash English",
     modelName: "gemini-2.5-flash-live-preview",
     config: {
       proactivity: { proactiveAudio: false },
