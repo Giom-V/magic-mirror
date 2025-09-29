@@ -1,5 +1,5 @@
 {
-  "liveModel": "gemini-2.5-flash-live-preview",
+  "liveModel": "gemini-2.5-flash-native-audio-preview-09-2025",
   "defaultModelId": "french",
   "imageEditModel": "gemini-2.5-flash-image-preview",
   "camera": {
