@@ -214,6 +214,10 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
       },
     };
 
+    if (appConfig.proactivity?.proactiveAudio) {
+      delete liveConnectConfig.speechConfig.languageCode;
+    }
+
     console.log(
       "Connecting to GenAI Live with config:",
       JSON.stringify(liveConnectConfig, null, 2)
