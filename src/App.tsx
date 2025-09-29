@@ -32,6 +32,7 @@ import {
 } from "@google/genai";
 import { disguiseCameraImage } from "./tools/disguiseCameraImage";
 import { editImage } from "./tools/editImage";
+import { generateStoryImage } from "./tools/generateStoryImage";
 import { playMusic, stopMusic, toggleMusic } from "./tools/music-tool";
 import appConfig from "./config.json";
 
@@ -54,6 +55,7 @@ function App() {
   const [activeTalkingVideo, setActiveTalkingVideo] = useState(0);
   const endOfSpeechTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [disguisedImage, setDisguisedImage] = useState<string | null>(null);
+  const [storyImage, setStoryImage] = useState<string | null>(null);
   const [lastEditedImage, setLastEditedImage] = useState<string | null>(null);
   const [imageChat, setImageChat] = useState<Chat | null>(null);
   const [aiClient, setAiClient] = useState<GoogleGenAI | null>(null);
@@ -138,8 +140,28 @@ function App() {
             case appConfig.tools.clearImage.name:
               console.log("App.tsx: Handling clearImage tool call");
               setDisguisedImage(null);
+              setStoryImage(null);
               setLastEditedImage(null);
               setImageChat(null);
+              break;
+
+            case appConfig.tools.generate_story_image.name:
+              console.log(
+                "App.tsx: Handling generate_story_image tool call",
+                fnCall.args
+              );
+              if (!aiClient) {
+                throw new Error("AI client not initialized.");
+              }
+              const storyImageUrl = await generateStoryImage(
+                fnCall.args?.prompt as string,
+                aiClient,
+                config
+              );
+              setStoryImage(storyImageUrl);
+              setLastEditedImage(storyImageUrl);
+              // Interrupt to show the image immediately
+              scheduling = FunctionResponseScheduling.INTERRUPT;
               break;
 
             case "play_music":
@@ -381,7 +403,7 @@ function App() {
             />
             {/* APP goes here */}
             {(() => {
-              const imageUrl = lastEditedImage || disguisedImage;
+              const imageUrl = lastEditedImage || storyImage || disguisedImage;
               if (imageUrl) {
                 return <MagicEffect imageUrl={imageUrl} />;
               }
