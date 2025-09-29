@@ -68,6 +68,7 @@ function App() {
   const {
     client,
     connected,
+    setupComplete,
     connect,
     disconnect,
     config,
@@ -342,6 +343,52 @@ function App() {
     showCamera,
     setShowCamera,
   ]);
+
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.srcObject = videoStream;
+    }
+  }, [videoStream]);
+
+  useEffect(() => {
+    if (!videoStream || !connected || !setupComplete) {
+      return;
+    }
+
+    const video = videoRef.current;
+    if (!video) {
+      return;
+    }
+
+    const canvas = document.createElement("canvas");
+    const context = canvas.getContext("2d");
+
+    if (!context) {
+      console.error("Could not get 2d context from canvas");
+      return;
+    }
+
+    const frameSender = setInterval(() => {
+      if (video.readyState >= 2) {
+        // HAVE_CURRENT_DATA
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const dataUrl = canvas.toDataURL("image/jpeg", 0.8);
+        const base64Data = dataUrl.split(",")[1];
+
+        if (base64Data) {
+          client.sendRealtimeInput([
+            { mimeType: "image/jpeg", data: base64Data },
+          ]);
+        }
+      }
+    }, 500); // Send frame every 500ms
+
+    return () => {
+      clearInterval(frameSender);
+    };
+  }, [videoStream, connected, setupComplete, client, videoRef]);
 
   return (
     <div className="App">
