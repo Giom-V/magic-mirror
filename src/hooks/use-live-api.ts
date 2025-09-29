@@ -39,6 +39,7 @@ export type UseLiveAPIResults = {
   model: string;
   setModel: (model: string) => void;
   connected: boolean;
+  setupComplete: boolean;
   connect: () => Promise<void>;
   disconnect: () => Promise<void>;
   restart: () => Promise<void>;
@@ -115,6 +116,7 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
     };
   });
   const [connected, setConnected] = useState(false);
+  const [setupComplete, setSetupComplete] = useState(false);
   const [volume, setVolume] = useState(0);
   const [isInputFocused, setInputFocused] = useState(false);
   const configRef = useRef(config);
@@ -142,6 +144,7 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
     };
 
     const onSetupComplete = () => {
+      setSetupComplete(true);
       if (config.introductoryMessage) {
         const lang = config.speechConfig?.languageCode || "en-US";
         const message =
@@ -156,6 +159,7 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
 
     const onClose = () => {
       setConnected(false);
+      setSetupComplete(false);
     };
 
     const onError = (error: ErrorEvent) => {
@@ -241,6 +245,7 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
       model,
       setModel,
       connected,
+      setupComplete,
       connect,
       disconnect,
       restart,
@@ -255,6 +260,7 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
       model,
       setModel,
       connected,
+      setupComplete,
       connect,
       disconnect,
       restart,

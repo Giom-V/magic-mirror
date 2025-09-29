@@ -157,6 +157,29 @@ export default function SettingsDialog() {
               />
             </div>
           </div>
+          <div className="startup-settings-container">
+            <h3>Startup Settings</h3>
+            <div className="startup-setting">
+              <label htmlFor="enable-camera-on-connect">
+                Enable camera on connection
+              </label>
+              <input
+                type="checkbox"
+                id="enable-camera-on-connect"
+                checked={config.autoStart?.withCamera || false}
+                onChange={(e) => {
+                  const newConfig: AppConfig = {
+                    ...config,
+                    autoStart: {
+                      enabled: config.autoStart?.enabled ?? true,
+                      withCamera: e.target.checked,
+                    },
+                  };
+                  setConfig(newConfig);
+                }}
+              />
+            </div>
+          </div>
           <div className={connected ? "disabled" : ""}>
             <h3>System Instructions</h3>
             <textarea

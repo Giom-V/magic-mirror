@@ -38,7 +38,7 @@ The application will be available at `http://localhost:3000`.
 | `i`      | Disguise yourself as a fantasy character.                |
 | `Delete` | Remove the image disguise.                               |
 | `c`      | Clear the image disguise.                                |
-| `v`      | Play or pause the talking animation.                     |
+| `v`      | Show or hide the camera feed.                            |
 | `d`      | Show or hide the developer side panel.                   |
 | `m`      | Toggle background music.                                 |
 
