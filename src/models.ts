@@ -16,6 +16,9 @@ export const modelOptions: ModelOption[] = [
     modelName: "gemini-2.5-flash-native-audio-preview-09-2025",
     config: {
       proactivity: { proactiveAudio: true },
+      speechConfig: {
+        languageCode: "fr-FR",
+      },
     },
   },
   {
