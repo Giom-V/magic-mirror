@@ -1,26 +1,30 @@
-import { GoogleGenAI } from "@google/genai";
+import { Chat, GoogleGenAI } from "@google/genai";
 import { AppConfig } from "../types";
 
 export function generateStoryImage(
   prompt: string,
   ai: GoogleGenAI,
-  config: AppConfig
+  config: AppConfig,
+  chat: Chat | null,
+  onChatCreated: (chat: Chat) => void
 ): Promise<string> {
   return new Promise(async (resolve, reject) => {
     console.log(`Using tool: generateStoryImage with prompt: ${prompt}`);
 
     try {
+      let currentChat = chat;
+      if (!currentChat) {
+        console.log("generateStoryImage: Creating new chat session for story.");
+        currentChat = ai.chats.create({
+          model: config.imageEditModel,
+        });
+        onChatCreated(currentChat);
+      }
+
       console.log("generateStoryImage: Sending prompt to model for image generation...");
-      const response = await ai.models.generateContent({
-        model: config.imageEditModel,
-        contents: [
-          {
-            parts: [
-              {
-                text: `Generate a fantasy-style image based on the following description: ${prompt}`,
-              },
-            ],
-          },
+      const response = await currentChat.sendMessage({
+        message: [
+            `Generate a fantasy-style image based on the following description: ${prompt}. Maintain a consistent art style with any previous images in this conversation.`,
         ],
       });
 

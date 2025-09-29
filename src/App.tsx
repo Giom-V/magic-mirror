@@ -58,6 +58,7 @@ function App() {
   const [storyImage, setStoryImage] = useState<string | null>(null);
   const [lastEditedImage, setLastEditedImage] = useState<string | null>(null);
   const [imageChat, setImageChat] = useState<Chat | null>(null);
+  const [storyChat, setStoryChat] = useState<Chat | null>(null);
   const [aiClient, setAiClient] = useState<GoogleGenAI | null>(null);
   const [muted, setMuted] = useState(false);
   const [sidePanelOpen, setSidePanelOpen] = useState(false);
@@ -143,6 +144,7 @@ function App() {
               setStoryImage(null);
               setLastEditedImage(null);
               setImageChat(null);
+              setStoryChat(null);
               break;
 
             case appConfig.tools.generate_story_image.name:
@@ -156,7 +158,9 @@ function App() {
               const storyImageUrl = await generateStoryImage(
                 fnCall.args?.prompt as string,
                 aiClient,
-                config
+                config,
+                storyChat,
+                setStoryChat
               );
               setStoryImage(storyImageUrl);
               setLastEditedImage(storyImageUrl);
