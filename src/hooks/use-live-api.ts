@@ -199,24 +199,22 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
       appConfig.systemInstructions?.["en-US"] ||
       "";
 
+    const { languageCode: _, ...baseSpeechConfig } =
+      appConfig.speechConfig || {};
+
     const liveConnectConfig = {
       responseModalities: appConfig.responseModalities,
       mediaResolution: appConfig.mediaResolution,
       realtimeInputConfig: appConfig.realtimeInputConfig,
       contextWindowCompression: appConfig.contextWindowCompression,
       tools: appConfig.tools,
-      speechConfig: {
-        ...appConfig.speechConfig,
-        languageCode: languageCode,
-      },
+      speechConfig: appConfig.proactivity?.proactiveAudio
+        ? baseSpeechConfig
+        : { ...baseSpeechConfig, languageCode },
       systemInstruction: {
         parts: [{ text: systemInstructionText }],
       },
     };
-
-    if (appConfig.proactivity?.proactiveAudio) {
-      delete liveConnectConfig.speechConfig.languageCode;
-    }
 
     console.log(
       "Connecting to GenAI Live with config:",

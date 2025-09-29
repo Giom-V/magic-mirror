@@ -8,14 +8,21 @@ export type ModelOption = {
   config: Partial<AppConfig>;
 };
 
+const proactiveModelConfig = {
+  modelName: "gemini-2.5-flash-native-audio-preview-09-2025",
+  config: {
+    proactivity: { proactiveAudio: true },
+  },
+};
+
 export const modelOptions: ModelOption[] = [
   {
     id: "proactive-french",
     value: "proactive-french",
     label: "2.5 proactive French",
-    modelName: "gemini-2.5-flash-native-audio-preview-09-2025",
+    ...proactiveModelConfig,
     config: {
-      proactivity: { proactiveAudio: true },
+      ...proactiveModelConfig.config,
       speechConfig: {
         languageCode: "fr-FR",
       },
@@ -25,9 +32,9 @@ export const modelOptions: ModelOption[] = [
     id: "proactive-english",
     value: "proactive-english",
     label: "2.5 proactive English",
-    modelName: "gemini-2.5-flash-native-audio-preview-09-2025",
+    ...proactiveModelConfig,
     config: {
-      proactivity: { proactiveAudio: true },
+      ...proactiveModelConfig.config,
       speechConfig: {
         languageCode: "en-US",
       },
