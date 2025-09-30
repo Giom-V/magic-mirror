@@ -31,7 +31,7 @@ export async function generateStoryImage(
     ],
   });
 
-  const imagePart = response.candidates?.[0]?.content?.parts.find(
+  const imagePart = response.candidates?.[0]?.content?.parts?.find(
     (p) => p.inlineData?.data
   );
 
