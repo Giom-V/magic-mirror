@@ -157,6 +157,7 @@ function App() {
               }
               const storyImageUrl = await generateStoryImage(
                 fnCall.args?.prompt as string,
+                fnCall.args?.music_prompt as string | undefined,
                 aiClient,
                 config,
                 storyChat,
@@ -164,7 +165,6 @@ function App() {
               );
               setStoryImage(storyImageUrl);
               setLastEditedImage(storyImageUrl);
-              // Run tool in the background without interrupting speech
               scheduling = FunctionResponseScheduling.SILENT;
               break;
 
@@ -177,7 +177,6 @@ function App() {
                   fnCall.args.modelName as string | undefined
                 );
               }
-              // Run tool in the background without interrupting speech
               scheduling = FunctionResponseScheduling.SILENT;
               break;
 
