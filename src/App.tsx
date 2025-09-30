@@ -51,7 +51,6 @@ function App() {
   // either the screen capture, the video or null, if null we hide it
   const [videoStream, setVideoStream] = useState<MediaStream | null>(null);
   const [showVideo, setShowVideo] = useState(true);
-  const [showCamera, setShowCamera] = useState(false);
   const [isTalking, setIsTalking] = useState(false);
   const [activeTalkingVideo, setActiveTalkingVideo] = useState(0);
   const endOfSpeechTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -66,12 +65,10 @@ function App() {
   const [controlsVisible, setControlsVisible] = useState(true);
   const [didAutoConnect, setDidAutoConnect] = useState(false);
   const webcam = useWebcam();
-  const prevConnected = useRef(false);
 
   const {
     client,
     connected,
-    setupComplete,
     connect,
     disconnect,
     config,
@@ -159,7 +156,7 @@ function App() {
                 throw new Error("AI client not initialized.");
               }
               const prompt = fnCall.args?.prompt;
-              if (typeof prompt !== 'string' || !prompt) {
+              if (typeof prompt !== "string" || !prompt) {
                 throw new Error(
                   "The 'prompt' argument is missing or invalid for generate_story_image tool call."
                 );
@@ -259,24 +256,11 @@ function App() {
     ) {
       setDidAutoConnect(true);
       connect();
-    }
-
-    if (connected && !prevConnected.current) {
-      if (config.autoStart?.withCamera) {
+      if (config.autoStart.withCamera) {
         webcam.start().then(setVideoStream);
       }
     }
-
-    prevConnected.current = connected;
-  }, [
-    connect,
-    webcam,
-    setVideoStream,
-    connected,
-    didAutoConnect,
-    config,
-    prevConnected,
-  ]);
+  }, [connect, webcam, setVideoStream, connected, didAutoConnect, config]);
 
   useEffect(() => {
     let timeoutId: NodeJS.Timeout;
@@ -351,7 +335,7 @@ function App() {
         setLastEditedImage(null);
         setShowVideo(true);
       } else if (event.key.toLowerCase() === "v") {
-        setShowCamera(!showCamera);
+        setShowVideo(!showVideo);
       }
     };
 
@@ -372,55 +356,7 @@ function App() {
     isInputFocused,
     showVideo,
     sidePanelOpen,
-    showCamera,
-    setShowCamera,
   ]);
-
-  useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.srcObject = videoStream;
-    }
-  }, [videoStream]);
-
-  useEffect(() => {
-    if (!videoStream || !connected || !setupComplete) {
-      return;
-    }
-
-    const video = videoRef.current;
-    if (!video) {
-      return;
-    }
-
-    const canvas = document.createElement("canvas");
-    const context = canvas.getContext("2d");
-
-    if (!context) {
-      console.error("Could not get 2d context from canvas");
-      return;
-    }
-
-    const frameSender = setInterval(() => {
-      if (video.readyState >= 2) {
-        // HAVE_CURRENT_DATA
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        context.drawImage(video, 0, 0, canvas.width, canvas.height);
-        const dataUrl = canvas.toDataURL("image/jpeg", 0.8);
-        const base64Data = dataUrl.split(",")[1];
-
-        if (base64Data) {
-          client.sendRealtimeInput([
-            { mimeType: "image/jpeg", data: base64Data },
-          ]);
-        }
-      }
-    }, 500); // Send frame every 500ms
-
-    return () => {
-      clearInterval(frameSender);
-    };
-  }, [videoStream, connected, setupComplete, client, videoRef]);
 
   return (
     <div className="App">
@@ -485,7 +421,7 @@ function App() {
             })()}
             <video
               className={cn("stream", {
-                hidden: !showCamera || !videoRef.current || !videoStream,
+                hidden: !videoRef.current || !videoStream,
               })}
               ref={videoRef}
               autoPlay
