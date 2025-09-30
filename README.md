@@ -55,9 +55,9 @@ The application will be available at `http://localhost:3000`.
 
 The Magic Mirror is voice-controlled and designed to stay in character. Here are some things you can try:
 
-*   **Tell stories:**
-    *   "Tell me a story about a brave knight."
-    *   "Let's write a story together."
+*   **Illustrate your stories:**
+    *   "Draw a picture of a brave knight."
+    *   "Generate an image of a mysterious forest."
 
 *   **Disguise yourself:**
     *   "Make me look like a wizard."
@@ -71,6 +71,31 @@ The Magic Mirror is voice-controlled and designed to stay in character. Here are
 *   **Play music:**
     *   "Play some fantasy music."
     *   "I want to hear some epic adventure music."
+    *   "Stop the music."
+
+## Project Structure
+
+*   `public/`: Contains the main HTML file and static assets like images and fonts.
+*   `src/`: The heart of the application, containing all the React components, hooks, and business logic.
+    *   `components/`: Reusable React components that make up the UI.
+    *   `contexts/`: React context providers for managing global state.
+    *   `hooks/`: Custom React hooks for encapsulating and reusing stateful logic.
+    *   `lib/`: Utility functions and helper code.
+    *   `tools/`: Implementations of the functions ("tools") that the Gemini model can call, such as `disguiseCameraImage` and `playMusic`.
+*   `src/config.json`: A configuration file for the application, allowing you to tweak prompts and other settings.
+
+## Configuration
+
+The `src/config.json` file allows you to customize the behavior of the Magic Mirror. Here are some of the key options:
+
+*   `liveModel`: The Gemini model used for the main chat and voice interaction.
+*   `imageEditModel`: The Gemini model used for generating and editing images.
+*   `disguisePromptTemplate`: The prompt template used when you ask the mirror to disguise you.
+*   `editImagePromptTemplate`: The prompt template used when you ask the mirror to edit an image.
+*   `musicPromptTemplate`: The prompt template used to generate music prompts for Lyria.
+*   `systemInstructions`: The core instructions for the Magic Mirror's persona and behavior. This is where you can change how the mirror responds, what it can do, and how it interacts with the user. There are different instructions for different languages (e.g., `en-US`, `fr-FR`).
+*   `autoStart`: Allows the application to automatically connect and start the camera on load.
+*   `tools`: This section defines the tools available to the Gemini model, including their names, descriptions, and parameters. You can add, remove, or modify tools here to change the Magic Mirror's capabilities.
 
 ## Development
 
