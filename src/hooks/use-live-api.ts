@@ -143,10 +143,10 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
 
     const onSetupComplete = () => {
       if (config.introductoryMessage) {
-        const lang = navigator.language;
-        const message = lang.startsWith("fr")
-          ? config.introductoryMessage["fr-FR"]
-          : config.introductoryMessage["en-US"];
+        const lang = config.speechConfig?.languageCode || "en-US";
+        const message =
+          config.introductoryMessage[lang] ||
+          config.introductoryMessage["en-US"];
 
         if (message) {
           client.send({ text: message });
