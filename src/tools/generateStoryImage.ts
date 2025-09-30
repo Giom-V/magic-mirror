@@ -4,7 +4,6 @@ import { playMusic } from "./music-tool";
 
 export function generateStoryImage(
   prompt: string,
-  music_prompt: string | undefined,
   ai: GoogleGenAI,
   config: AppConfig,
   chat: Chat | null,
@@ -12,9 +11,9 @@ export function generateStoryImage(
 ): Promise<string> {
   return new Promise(async (resolve, reject) => {
     console.log(`Using tool: generateStoryImage with prompt: ${prompt}`);
-    if (music_prompt) {
-      console.log(`...and music_prompt: ${music_prompt}`);
-      playMusic(music_prompt, config);
+    if (config.music?.accompany) {
+      console.log("...and accompanying music.");
+      playMusic(prompt, config);
     }
 
     try {

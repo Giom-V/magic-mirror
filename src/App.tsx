@@ -157,7 +157,6 @@ function App() {
               }
               const storyImageUrl = await generateStoryImage(
                 fnCall.args?.prompt as string,
-                fnCall.args?.music_prompt as string | undefined,
                 aiClient,
                 config,
                 storyChat,
