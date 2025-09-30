@@ -158,8 +158,14 @@ function App() {
               if (!aiClient) {
                 throw new Error("AI client not initialized.");
               }
+              const prompt = fnCall.args?.prompt;
+              if (typeof prompt !== 'string' || !prompt) {
+                throw new Error(
+                  "The 'prompt' argument is missing or invalid for generate_story_image tool call."
+                );
+              }
               const storyImageUrl = await generateStoryImage(
-                fnCall.args?.prompt as string,
+                prompt,
                 aiClient,
                 config,
                 storyChat,
