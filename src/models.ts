@@ -20,7 +20,7 @@ export const modelOptions: ModelOption[] = [
     id: "proactive-french",
     value: "proactive-french",
     label: "2.5 proactive French",
-    ...proactiveModelConfig,
+    modelName: proactiveModelConfig.modelName,
     config: {
       ...proactiveModelConfig.config,
       speechConfig: {
@@ -32,7 +32,7 @@ export const modelOptions: ModelOption[] = [
     id: "proactive-english",
     value: "proactive-english",
     label: "2.5 proactive English",
-    ...proactiveModelConfig,
+    modelName: proactiveModelConfig.modelName,
     config: {
       ...proactiveModelConfig.config,
       speechConfig: {
