@@ -27,6 +27,8 @@ To get started, you'll need a free Gemini API key.
 
 The application will be available at `http://localhost:3000`.
 
+*Be aware that the Image generation model doesn't have a free tier, so you'll pay 0.039$ per image the mirror generates!*
+
 ## Controls
 
 ### Keyboard Shortcuts
@@ -97,7 +99,3 @@ The build is minified and the filenames include the hashes.\
 Your app is ready to be deployed!
 
 See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
----
-
-_This is an experiment showcasing the Live API, not an official Google product. We’ll do our best to support and maintain this experiment but your mileage may vary. We encourage open sourcing projects as a way of learning from each other. Please respect our and other creators' rights, including copyright and trademark rights when present, when sharing these works and creating derivative work. If you want more info on Google's policy, you can find that [here](https://developers.google.com/terms/site-policies)._
