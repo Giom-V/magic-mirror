@@ -27,7 +27,7 @@ To get started, you'll need a free Gemini API key.
 
 The application will be available at `http://localhost:3000`.
 
-*Be aware that the Image generation model doesn't have a free tier, so you'll pay 0.039$ per image the mirror generates!*
+**Be aware that the Image generation model doesn't have a free tier, so you'll pay 0.039$ per image the mirror generates!**
 
 ## Controls
 
