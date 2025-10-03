@@ -1,7 +1,7 @@
 {
   "liveModel": "gemini-2.5-flash-native-audio-preview-09-2025",
   "defaultModelId": "proactive-french",
-  "imageEditModel": "gemini-2.5-flash-image-preview",
+  "imageEditModel": "gemini-2.5-flash-image",
   "camera": {
     "orientation": "horizontal"
   },
