@@ -6,6 +6,10 @@
 
 This repository is a demonstration of what can be built with the Gemini Live API and the genmedia (e.g., Veo, Lyria, Imagen) models from the Gemini family. It is based on the [react-based starter app](https://github.com/google-gemini/live-api-web-console) and transforms it into an interactive, voice-controlled "Magic Mirror".
 
+## Try it (until the end of the devfest season)
+
+www.goo.gle/devfest-magic-mirror
+
 ## How to Run
 
 To get started, you'll need a free Gemini API key.
