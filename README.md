@@ -8,7 +8,7 @@ This repository is a demonstration of what can be built with the Gemini Live API
 
 ## Try it (until the end of the devfest season)
 
-www.goo.gle/devfest-magic-mirror
+www.goo.gle/devfest-magic-mirror (it will talk in French by default, but you can ask it to switch to English)
 
 ## How to Run
 
