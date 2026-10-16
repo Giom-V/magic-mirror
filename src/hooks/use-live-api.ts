@@ -202,23 +202,25 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
     const { languageCode: _, ...baseSpeechConfig } =
       appConfig.speechConfig || {};
 
-    const liveConnectConfig = {
+    const liveConnectConfig: Record<string, any> = {
       responseModalities: appConfig.responseModalities,
       mediaResolution: appConfig.mediaResolution,
       realtimeInputConfig: appConfig.realtimeInputConfig,
       contextWindowCompression: appConfig.contextWindowCompression,
       tools: appConfig.tools,
-      speechConfig: appConfig.proactivity?.proactiveAudio
-        ? baseSpeechConfig
-        : { ...baseSpeechConfig, languageCode },
+      speechConfig: baseSpeechConfig,
       systemInstruction: {
         parts: [{ text: systemInstructionText }],
       },
     };
 
-    console.log(
-      "Connecting to GenAI Live with config:",
-      JSON.stringify(liveConnectConfig, null, 2)
+    if (appConfig.thinkingConfig) {
+      liveConnectConfig.thinkingConfig = appConfig.thinkingConfig;
+    }
+
+    console.info(
+      `[LLM Call] Connecting to Gemini Live API (model=${model}, language=${languageCode})`,
+      liveConnectConfig
     );
     client.disconnect();
     await client.connect(model, liveConnectConfig);

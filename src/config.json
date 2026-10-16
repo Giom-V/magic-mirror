@@ -1,7 +1,7 @@
 {
-  "liveModel": "gemini-2.5-flash-native-audio-preview-09-2025",
+  "liveModel": "gemini-3.8-live",
   "defaultModelId": "proactive-french",
-  "imageEditModel": "gemini-2.5-flash-image",
+  "imageEditModel": "gemini-3.1-flash-lite-image",
   "camera": {
     "orientation": "vertical"
   },
@@ -70,7 +70,7 @@
           },
           "modelName": {
             "type": "STRING",
-            "description": "Optional. The specific Gemini model to use for generating the detailed music prompts. Defaults to 'gemini-2.5-flash-lite'."
+            "description": "Optional. The specific Gemini model to use for generating the detailed music prompts. Defaults to 'gemini-3.5-flash-lite'."
           }
         },
         "required": ["prompt"]

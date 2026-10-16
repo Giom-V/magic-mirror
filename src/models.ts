@@ -1,3 +1,11 @@
+/**
+ * Live API model configuration options for the Magic Mirror application.
+ *
+ * Defines selectable Gemini 3.8 Live and Gemini 3.8 Live Extended Thinking
+ * configurations across French and English locales.
+ */
+
+import { ThinkingLevel } from "@google/genai";
 import { AppConfig } from "./types";
 
 export type ModelOption = {
@@ -8,21 +16,14 @@ export type ModelOption = {
   config: Partial<AppConfig>;
 };
 
-const proactiveModelConfig = {
-  modelName: "gemini-2.5-flash-native-audio-preview-09-2025",
-  config: {
-    proactivity: { proactiveAudio: true },
-  },
-};
-
 export const modelOptions: ModelOption[] = [
   {
     id: "proactive-french",
     value: "proactive-french",
-    label: "2.5 proactive French",
-    modelName: proactiveModelConfig.modelName,
+    label: "3.8 Live French",
+    modelName: "gemini-3.8-live",
     config: {
-      ...proactiveModelConfig.config,
+      thinkingConfig: undefined,
       speechConfig: {
         languageCode: "fr-FR",
       },
@@ -31,34 +32,38 @@ export const modelOptions: ModelOption[] = [
   {
     id: "proactive-english",
     value: "proactive-english",
-    label: "2.5 proactive English",
-    modelName: proactiveModelConfig.modelName,
+    label: "3.8 Live English",
+    modelName: "gemini-3.8-live",
     config: {
-      ...proactiveModelConfig.config,
+      thinkingConfig: undefined,
       speechConfig: {
         languageCode: "en-US",
       },
     },
   },
   {
-    id: "french",
-    value: "french",
-    label: "2.5 flash French",
-    modelName: "gemini-2.5-flash-live-preview",
+    id: "thinking-french",
+    value: "thinking-french",
+    label: "3.8 Live Thinking French",
+    modelName: "gemini-3.8-live-extended-thinking",
     config: {
-      proactivity: { proactiveAudio: false },
+      thinkingConfig: {
+        thinkingLevel: ThinkingLevel.LOW,
+      },
       speechConfig: {
         languageCode: "fr-FR",
       },
     },
   },
   {
-    id: "english",
-    value: "english",
-    label: "2.5 flash English",
-    modelName: "gemini-2.5-flash-live-preview",
+    id: "thinking-english",
+    value: "thinking-english",
+    label: "3.8 Live Thinking English",
+    modelName: "gemini-3.8-live-extended-thinking",
     config: {
-      proactivity: { proactiveAudio: false },
+      thinkingConfig: {
+        thinkingLevel: ThinkingLevel.LOW,
+      },
       speechConfig: {
         languageCode: "en-US",
       },

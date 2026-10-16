@@ -4,7 +4,7 @@
 
 # Magic Mirror
 
-This repository is a demonstration of what can be built with the Gemini Live API and the genmedia (e.g., Veo, Lyria, Imagen) models from the Gemini family. It is based on the [react-based starter app](https://github.com/google-gemini/live-api-web-console) and transforms it into an interactive, voice-controlled "Magic Mirror".
+This repository is a demonstration of what can be built with the **Gemini Live API** (`gemini-3.8-live` and `gemini-3.8-live-extended-thinking`), the **Interactions API**, and the GenMedia models from the Gemini family (**Nano Banana 2 Lite** `gemini-3.1-flash-lite-image`, **Lyria RealTime** `lyria-realtime-exp`, and `gemini-3.5-flash-lite`). It is based on the [react-based starter app](https://github.com/google-gemini/live-api-web-console) and transforms it into an interactive, voice-controlled "Magic Mirror".
 
 ## Try it (until the end of the devfest season)
 
@@ -31,7 +31,7 @@ To get started, you'll need a free Gemini API key.
 
 The application will be available at `http://localhost:3000`.
 
-**Be aware that the Image generation model doesn't have a free tier, so you'll pay 0.039$ per image the mirror generates!**
+**Note:** Image generation and editing use `gemini-3.1-flash-lite-image` (Nano Banana 2 Lite) via the Interactions API by default (configurable in `src/config.json`).
 
 ## Controls
 
