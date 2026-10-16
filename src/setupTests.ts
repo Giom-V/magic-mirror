@@ -20,6 +20,18 @@
 // learn more: https://github.com/testing-library/jest-dom
 import "core-js/features/structured-clone";
 import "@testing-library/jest-dom";
+import { ReadableStream } from "stream/web";
+import { TextEncoder, TextDecoder } from "util";
+
+if (typeof global.ReadableStream === "undefined") {
+  (global as any).ReadableStream = ReadableStream;
+}
+if (typeof global.TextEncoder === "undefined") {
+  (global as any).TextEncoder = TextEncoder;
+}
+if (typeof global.TextDecoder === "undefined") {
+  (global as any).TextDecoder = TextDecoder;
+}
 
 window.HTMLMediaElement.prototype.play = jest.fn()
 window.HTMLMediaElement.prototype.pause = jest.fn()

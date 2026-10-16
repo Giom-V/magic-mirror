@@ -1,9 +1,18 @@
+/**
+ * Model selector dropdown component for switching between Gemini 3.8 Live
+ * models and language presets in the settings dialog.
+ */
+
 import { useCallback, useEffect, useState } from "react";
 import Select from "react-select";
 import { useLiveAPIContext } from "../../contexts/LiveAPIContext";
 import { modelOptions, ModelOption } from "../../models";
 import { AppConfig } from "../../types";
 
+/**
+ * Renders the model and language preset selector and updates the Live API
+ * context configuration when a new option is chosen.
+ */
 export default function ModelSelector() {
   const { model, setModel, config, setConfig, restart, connected } =
     useLiveAPIContext();
@@ -18,22 +27,30 @@ export default function ModelSelector() {
   );
 
   useEffect(() => {
-    const currentOption = modelOptions.find((opt) => opt.modelName === model);
+    const lang = config.speechConfig?.languageCode;
+    const currentOption =
+      modelOptions.find(
+        (opt) =>
+          opt.modelName === model &&
+          opt.config.speechConfig?.languageCode === lang
+      ) || modelOptions.find((opt) => opt.modelName === model);
     if (currentOption) {
       setSelectedOption(currentOption);
     }
-  }, [model]);
-
+  }, [model, config.speechConfig?.languageCode]);
 
   useEffect(() => {
     if (connected) {
       restart();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [model]);
+  }, [model, config.speechConfig?.languageCode]);
 
   const updateModel = useCallback(
     (option: ModelOption) => {
+      console.info(
+        `[ModelSelector] Switching Live API model preset to ${option.id} (${option.modelName})`
+      );
       setModel(option.modelName);
       const newConfig: AppConfig = {
         ...config,

@@ -24,7 +24,6 @@ import MagicEffect from "./components/magic-effect/MagicEffect";
 import cn from "classnames";
 import { LiveClientOptions } from "./types";
 import {
-  Chat,
   FunctionResponse,
   FunctionResponseScheduling,
   GoogleGenAI,
@@ -40,7 +39,6 @@ const API_KEY = process.env.REACT_APP_GEMINI_API_KEY as string;
 
 const apiOptions: LiveClientOptions = {
   apiKey: API_KEY,
-  httpOptions: { apiVersion: "v1alpha" },
 };
 
 function App() {
@@ -57,8 +55,12 @@ function App() {
   const [disguisedImage, setDisguisedImage] = useState<string | null>(null);
   const [storyImage, setStoryImage] = useState<string | null>(null);
   const [lastEditedImage, setLastEditedImage] = useState<string | null>(null);
-  const [imageChat, setImageChat] = useState<Chat | null>(null);
-  const [storyChat, setStoryChat] = useState<Chat | null>(null);
+  const [imageInteractionId, setImageInteractionId] = useState<string | null>(
+    null
+  );
+  const [storyInteractionId, setStoryInteractionId] = useState<string | null>(
+    null
+  );
   const [aiClient, setAiClient] = useState<GoogleGenAI | null>(null);
   const [muted, setMuted] = useState(false);
   const [sidePanelOpen, setSidePanelOpen] = useState(false);
@@ -72,6 +74,7 @@ function App() {
     connect,
     disconnect,
     config,
+    model,
     isInputFocused,
     volume,
   } = useLiveAPIContext();
@@ -88,7 +91,7 @@ function App() {
       if (!toolCall.functionCalls) {
         return;
       }
-      console.log("App.tsx: Received tool call:", toolCall.functionCalls);
+      console.info("App.tsx: Received tool call:", toolCall.functionCalls);
 
       const functionResponses: FunctionResponse[] = [];
 
@@ -100,7 +103,7 @@ function App() {
         try {
           switch (fnCall.name) {
             case appConfig.tools.disguise_camera_image.name:
-              console.log(
+              console.info(
                 "App.tsx: Handling disguise_camera_image tool call",
                 fnCall.args
               );
@@ -112,7 +115,7 @@ function App() {
                 webcam,
                 config,
                 aiClient,
-                setImageChat
+                setImageInteractionId
               );
               setDisguisedImage(imageUrl);
               setLastEditedImage(imageUrl);
@@ -121,17 +124,23 @@ function App() {
               break;
 
             case appConfig.tools.edit_image.name:
-              console.log(
+              console.info(
                 "App.tsx: Handling edit_image tool call",
                 fnCall.args
               );
-              if (!imageChat) {
-                throw new Error("No image chat available.");
+              const activeInteractionId =
+                imageInteractionId || storyInteractionId;
+              if (!aiClient || !activeInteractionId) {
+                throw new Error("No previous image interaction available.");
               }
               const editedImageUrl = await editImage(
                 fnCall.args?.prompt as string,
-                imageChat,
-                config
+                aiClient,
+                activeInteractionId,
+                config,
+                imageInteractionId
+                  ? setImageInteractionId
+                  : setStoryInteractionId
               );
               setLastEditedImage(editedImageUrl);
               // Interrupt to show the image immediately
@@ -139,16 +148,16 @@ function App() {
               break;
 
             case appConfig.tools.clearImage.name:
-              console.log("App.tsx: Handling clearImage tool call");
+              console.info("App.tsx: Handling clearImage tool call");
               setDisguisedImage(null);
               setStoryImage(null);
               setLastEditedImage(null);
-              setImageChat(null);
-              setStoryChat(null);
+              setImageInteractionId(null);
+              setStoryInteractionId(null);
               break;
 
             case appConfig.tools.generate_story_image.name:
-              console.log(
+              console.info(
                 "App.tsx: Handling generate_story_image tool call",
                 fnCall.args
               );
@@ -165,8 +174,8 @@ function App() {
                 prompt,
                 aiClient,
                 config,
-                storyChat,
-                setStoryChat
+                storyInteractionId,
+                setStoryInteractionId
               );
               setStoryImage(storyImageUrl);
               setLastEditedImage(storyImageUrl);
@@ -174,7 +183,10 @@ function App() {
               break;
 
             case "play_music":
-              console.log("App.tsx: Handling play_music tool call", fnCall.args);
+              console.info(
+                "App.tsx: Handling play_music tool call",
+                fnCall.args
+              );
               if (fnCall.args && typeof fnCall.args.prompt === "string") {
                 playMusic(
                   fnCall.args.prompt,
@@ -186,7 +198,7 @@ function App() {
               break;
 
             case "stop_music":
-              console.log("App.tsx: Handling stop_music tool call");
+              console.info("App.tsx: Handling stop_music tool call");
               stopMusic();
               break;
 
@@ -200,18 +212,23 @@ function App() {
           result = { result: "error", error: e.message || "Unknown error" };
         }
 
+        const supportsScheduling =
+          model !== "gemini-3.8-live-extended-thinking";
+
         functionResponses.push({
           id: fnCall.id,
           name: fnCall.name,
-          response: {
-            ...result,
-            scheduling,
-          },
+          response: supportsScheduling
+            ? {
+                ...result,
+                scheduling,
+              }
+            : result,
         });
       }
 
       if (functionResponses.length > 0) {
-        console.log("App.tsx: Sending tool responses:", functionResponses);
+        console.info("App.tsx: Sending tool responses:", functionResponses);
         client.sendToolResponse({ functionResponses });
       }
     };
@@ -220,7 +237,16 @@ function App() {
     return () => {
       client.off("toolcall", onToolCall);
     };
-  }, [client, webcam, config, lastEditedImage, aiClient, imageChat]);
+  }, [
+    client,
+    webcam,
+    config,
+    model,
+    lastEditedImage,
+    aiClient,
+    imageInteractionId,
+    storyInteractionId,
+  ]);
 
   useEffect(() => {
     if (volume > 0.1) {
@@ -317,7 +343,7 @@ function App() {
           webcam,
           config,
           aiClient,
-          setImageChat
+          setImageInteractionId
         ).then((image) => {
           setDisguisedImage(image);
           setLastEditedImage(image);
@@ -325,14 +351,20 @@ function App() {
       } else if (event.key === "m") {
         toggleMusic(config);
       } else if (event.key.toLowerCase() === "c") {
-        console.log("Clearing images");
+        console.info("Clearing images");
         setDisguisedImage(null);
+        setStoryImage(null);
         setLastEditedImage(null);
+        setImageInteractionId(null);
+        setStoryInteractionId(null);
         setShowVideo(true);
       } else if (event.key === "Delete") {
-        console.log("Clearing images");
+        console.info("Clearing images");
         setDisguisedImage(null);
+        setStoryImage(null);
         setLastEditedImage(null);
+        setImageInteractionId(null);
+        setStoryInteractionId(null);
         setShowVideo(true);
       } else if (event.key.toLowerCase() === "v") {
         setShowVideo(!showVideo);
@@ -352,6 +384,7 @@ function App() {
     setMuted,
     webcam,
     config,
+    aiClient,
     setShowVideo,
     isInputFocused,
     showVideo,
@@ -382,7 +415,9 @@ function App() {
               })}
               autoPlay
               muted
-              onEnded={() => setActiveTalkingVideo(Math.floor(Math.random() * 4))}
+              onEnded={() =>
+                setActiveTalkingVideo(Math.floor(Math.random() * 4))
+              }
             />
             <video
               src="talking2.mp4"
@@ -391,7 +426,9 @@ function App() {
               })}
               autoPlay
               muted
-              onEnded={() => setActiveTalkingVideo(Math.floor(Math.random() * 4))}
+              onEnded={() =>
+                setActiveTalkingVideo(Math.floor(Math.random() * 4))
+              }
             />
             <video
               src="talking3.mp4"
@@ -400,7 +437,9 @@ function App() {
               })}
               autoPlay
               muted
-              onEnded={() => setActiveTalkingVideo(Math.floor(Math.random() * 4))}
+              onEnded={() =>
+                setActiveTalkingVideo(Math.floor(Math.random() * 4))
+              }
             />
             <video
               src="talking4.mp4"
@@ -409,7 +448,9 @@ function App() {
               })}
               autoPlay
               muted
-              onEnded={() => setActiveTalkingVideo(Math.floor(Math.random() * 4))}
+              onEnded={() =>
+                setActiveTalkingVideo(Math.floor(Math.random() * 4))
+              }
             />
             {/* APP goes here */}
             {(() => {
@@ -429,7 +470,11 @@ function App() {
             />
           </div>
 
-          <div className={cn("control-tray-container", { visible: controlsVisible })}>
+          <div
+            className={cn("control-tray-container", {
+              visible: controlsVisible,
+            })}
+          >
             <ControlTray
               videoRef={videoRef}
               supportsVideo={true}

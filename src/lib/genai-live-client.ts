@@ -207,17 +207,17 @@ export class GenAILiveClient extends EventEmitter<LiveClientEventTypes> {
     // or contentUpdate { end_of_turn: true }
     if (message.serverContent) {
       const { serverContent } = message;
-      if ("interrupted" in serverContent) {
+      if (serverContent.interrupted) {
         this.log("server.content", "interrupted");
         this.emit("interrupted");
         return;
       }
-      if ("turnComplete" in serverContent) {
+      if (serverContent.turnComplete) {
         this.log("server.content", "turnComplete");
         this.emit("turncomplete");
       }
 
-      if ("modelTurn" in serverContent) {
+      if (serverContent.modelTurn) {
         let parts: Part[] = serverContent.modelTurn?.parts || [];
 
         // when its audio that is returned for modelTurn
@@ -253,18 +253,20 @@ export class GenAILiveClient extends EventEmitter<LiveClientEventTypes> {
   }
 
   /**
-   * send realtimeInput, this is base64 chunks of "audio/pcm" and/or "image/jpg"
+   * Sends real-time streaming input (base64 chunks of "audio/pcm" and/or "image/jpeg")
+   * using the specific `audio` and `video` keys required by Gemini 3.8 Live.
    */
   sendRealtimeInput(chunks: Array<{ mimeType: string; data: string }>) {
     let hasAudio = false;
     let hasVideo = false;
     for (const ch of chunks) {
-      this.session?.sendRealtimeInput({ media: ch });
       if (ch.mimeType.includes("audio")) {
         hasAudio = true;
+        this.session?.sendRealtimeInput({ audio: ch });
       }
-      if (ch.mimeType.includes("image")) {
+      if (ch.mimeType.includes("image") || ch.mimeType.includes("video")) {
         hasVideo = true;
+        this.session?.sendRealtimeInput({ video: ch });
       }
       if (hasAudio && hasVideo) {
         break;
@@ -297,12 +299,17 @@ export class GenAILiveClient extends EventEmitter<LiveClientEventTypes> {
   }
 
   /**
-   * send normal content parts such as { text }
+   * Sends client content parts (such as `{ text }`) with an explicit `"user"` role
+   * per the Gemini 3.8 Live full-session client content protocol.
    */
   send(parts: Part | Part[], turnComplete: boolean = true) {
-    this.session?.sendClientContent({ turns: parts, turnComplete });
+    const partArray = Array.isArray(parts) ? parts : [parts];
+    this.session?.sendClientContent({
+      turns: [{ role: "user", parts: partArray }],
+      turnComplete,
+    });
     this.log(`client.send`, {
-      turns: Array.isArray(parts) ? parts : [parts],
+      turns: partArray,
       turnComplete,
     });
   }
